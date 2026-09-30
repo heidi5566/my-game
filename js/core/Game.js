@@ -385,33 +385,30 @@ export class Game {
   }
 
   /**
-   * 繪製防守路徑（科技光帶與導引虛線）
+   * 繪製防守路徑（若已有背景圖則僅繪製精細導引光點，未載入時繪製備用路徑）
    */
-  drawPath() {
+  drawPath(hasBgImage = false) {
     const ctx = this.ctx;
     const path = CONFIG.PATH;
 
-    // 路基深色粗線
-    ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = 36;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    ctx.moveTo(path[0].x, path[0].y);
-    for (let i = 1; i < path.length; i++) {
-      ctx.lineTo(path[i].x, path[i].y);
+    if (!hasBgImage) {
+      // 備用底層路基
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 36;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(path[0].x, path[0].y);
+      for (let i = 1; i < path.length; i++) {
+        ctx.lineTo(path[i].x, path[i].y);
+      }
+      ctx.stroke();
     }
-    ctx.stroke();
 
-    // 邊緣能量光軌
-    ctx.strokeStyle = 'rgba(79, 209, 197, 0.25)';
-    ctx.lineWidth = 38;
-    ctx.stroke();
-
-    // 中央導引虛線
-    ctx.strokeStyle = '#4fd1c5';
+    // 中央微光科技導引線
+    ctx.strokeStyle = 'rgba(79, 209, 197, 0.4)';
     ctx.lineWidth = 2;
-    ctx.setLineDash([8, 8]);
+    ctx.setLineDash([6, 8]);
     ctx.beginPath();
     ctx.moveTo(path[0].x, path[0].y);
     for (let i = 1; i < path.length; i++) {
@@ -457,7 +454,7 @@ export class Game {
     const ctx = this.ctx;
     ctx.save();
     ctx.font = 'bold 12px sans-serif';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'bottom';
     ctx.fillText('製作人：11311385', 12, this.height - 10);
@@ -470,17 +467,18 @@ export class Game {
   render(now) {
     this.ctx.clearRect(0, 0, this.width, this.height);
 
-    // 1. 繪製背景圖 (drawImage 填滿畫布)
+    // 1. 繪製由 Road_test.png 組成的背景地圖
     const bgImg = this.assetManager.getImage('background');
-    if (bgImg) {
+    const hasBg = !!bgImg;
+    if (hasBg) {
       this.ctx.drawImage(bgImg, 0, 0, this.width, this.height);
     } else {
       this.ctx.fillStyle = CONFIG.COLORS.BG;
       this.ctx.fillRect(0, 0, this.width, this.height);
     }
 
-    // 2. 繪製防守路徑
-    this.drawPath();
+    // 2. 繪製路徑導引線
+    this.drawPath(hasBg);
 
     // 3. 繪製基地防線指揮官 (Player Entity - drawImage 動態精靈切分播放)
     const playerImg = this.assetManager.getImage('player');
