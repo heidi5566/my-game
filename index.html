@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>極簡塔防 Mini Tower Defense</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <div id="wrap">
+    <h1>🏰 極簡塔防</h1>
+    <div id="sub">敵人是會爆炸的炸彈兵，沿路徑前進。砲塔會自動旋轉瞄準並開火，血量歸零即引爆！</div>
+    <div id="hud">
+      <span>波次 <b id="waveDisplay">1</b></span>
+      <span>金幣 <b id="goldDisplay">50</b></span>
+      <span class="lives">生命 <b id="livesDisplay">10</b></span>
+      <span>擊殺 <b id="killDisplay">0</b></span>
+    </div>
+    <canvas id="game" width="640" height="420"></canvas>
+    <div id="placeMsg"></div>
+    <div id="controls">
+      <button id="startWaveBtn">開始波次</button>
+      <button id="placeTowerBtn" class="secondary">放置新砲塔 (40金)</button>
+      <button id="upgradeBtn">升級選中砲塔 (20金)</button>
+      <button id="restartBtn">重新開始</button>
+      <button id="soundBtn" class="ghost">🔊 音效開</button>
+    </div>
+    <div class="hint">最多可部署 3 座砲塔（含初始塔）；點擊場上砲塔可選中它（黃圈標示），選中後可升級；點擊「放置新砲塔」再點空地即可自選位置增設</div>
+  </div>
+
+  <div id="overlay">
+    <h2 id="overTitle">遊戲結束</h2>
+    <p id="overText">你的基地被攻破了！</p>
+    <button id="overRestart">再玩一次</button>
+  </div>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>

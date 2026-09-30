@@ -1,0 +1,158 @@
+:root {
+  --bg: #0f1720;
+  --panel: #1b2733;
+  --accent: #4fd1c5;
+  --accent2: #f6ad55;
+  --danger: #f56565;
+  --text: #e2e8f0;
+  --grid: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  width: 100%;
+  max-width: 720px;
+}
+
+h1 {
+  font-size: 20px;
+  margin: 0 0 4px 0;
+  letter-spacing: 1px;
+}
+
+#sub {
+  font-size: 12px;
+  color: #8aa0b2;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+#hud {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  background: var(--panel);
+  padding: 8px 16px;
+  border-radius: 10px;
+  width: 100%;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+#hud span b {
+  color: var(--accent);
+}
+
+#hud .lives b {
+  color: var(--danger);
+}
+
+canvas {
+  background: var(--grid);
+  border-radius: 10px;
+  max-width: 100%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  touch-action: none;
+  cursor: pointer;
+}
+
+canvas.placing {
+  cursor: crosshair;
+}
+
+#controls {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+button {
+  background: var(--accent);
+  color: #0f1720;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button.secondary {
+  background: var(--accent2);
+}
+
+button.ghost {
+  background: #334455;
+  color: var(--text);
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+button:disabled {
+  background: #3a4a58;
+  color: #8aa0b2;
+  cursor: not-allowed;
+}
+
+#placeMsg {
+  font-size: 12px;
+  color: var(--accent2);
+  min-height: 16px;
+  margin-top: 6px;
+  text-align: center;
+}
+
+#overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 10;
+  text-align: center;
+  padding: 20px;
+}
+
+#overlay h2 {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+#overlay p {
+  color: #a0b4c4;
+  margin-bottom: 16px;
+}
+
+.hint {
+  font-size: 12px;
+  color: #6b8091;
+  margin-top: 8px;
+  text-align: center;
+}
