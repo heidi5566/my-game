@@ -4,8 +4,18 @@ import { Physics } from '../systems/Physics.js';
 import { SpriteRenderer } from '../systems/SpriteRenderer.js';
 
 /**
+ * 砲塔精靈幀定義 (WarSpriteSheet.png 第一排由左數過來前四個砲塔/戰車)
+ */
+const TOWER_SPRITES = [
+  { sx: 3, sy: 3, sw: 46, sh: 47 },   // 1. 經典綠色重裝砲塔戰車 (預設第一首選)
+  { sx: 55, sy: 5, sw: 47, sh: 30 },  // 2. 重型裝甲砲塔
+  { sx: 111, sy: 5, sw: 63, sh: 45 }, // 3. 雙聯裝機動火砲
+  { sx: 178, sy: 6, sw: 27, sh: 44 }  // 4. 防空飛彈發射防禦塔
+];
+
+/**
  * 防禦砲塔實體 (Tower Entity)
- * 繼承自 Entity，負責目標索敵、平滑旋轉瞄準、射擊冷卻與精靈圖外觀繪製
+ * 繼承自 Entity，負責目標索敵、平滑旋轉瞄準、射擊冷卻與 WarSpriteSheet 精靈圖外觀繪製
  */
 export class Tower extends Entity {
   constructor(x, y, config = CONFIG.TOWER) {
@@ -64,7 +74,7 @@ export class Tower extends Entity {
 
       if (now - this.lastShot >= this.fireRate) {
         this.lastShot = now;
-        this.recoil = 5;
+        this.recoil = 6;
         if (onFire) {
           onFire(this, best, this.damage);
         }
@@ -76,7 +86,7 @@ export class Tower extends Entity {
   }
 
   /**
-   * 輔助繪製正六角形
+   * 輔助繪製正六角形底座
    */
   static drawHexPath(ctx, r) {
     ctx.beginPath();
@@ -125,73 +135,67 @@ export class Tower extends Entity {
   }
 
   /**
-   * 繪製砲塔自身及射程圈、選中光環
+   * 繪製砲塔自身及射程圈、選中光環與 WarSpriteSheet 精靈圖
    */
   render(ctx, isSelected = false, towerImage = null) {
-    const baseR = 19 + this.level * 1.8;
-    const turretR = 9 + this.level * 1.3;
-    const barrelLen = 20 + this.level * 2.2;
+    const baseR = 20 + this.level * 1.5;
 
     // 1. 射程範圍
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.range, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(79, 209, 197, 0.07)';
+    ctx.fillStyle = 'rgba(79, 209, 197, 0.08)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(79, 209, 197, 0.25)';
+    ctx.strokeStyle = 'rgba(79, 209, 197, 0.3)';
     ctx.stroke();
-
-    ctx.save();
-    ctx.translate(this.x, this.y);
 
     // 2. 被選中時的外圈高亮光環
     if (isSelected) {
       ctx.beginPath();
-      ctx.arc(0, 0, baseR + 7, 0, Math.PI * 2);
+      ctx.arc(this.x, this.y, baseR + 8, 0, Math.PI * 2);
       ctx.strokeStyle = '#f6ad55';
       ctx.lineWidth = 3;
       ctx.stroke();
       ctx.lineWidth = 1;
     }
 
-    // 3. 砲塔底座 (六角形科技底座 + 放射漸層)
+    // 3. 砲塔強化底座平台 (Hex Base)
+    ctx.save();
+    ctx.translate(this.x, this.y);
     const grad = ctx.createRadialGradient(0, 0, 2, 0, 0, baseR);
-    grad.addColorStop(0, '#3a4f5e');
-    grad.addColorStop(1, '#1c2833');
+    grad.addColorStop(0, '#2c3e50');
+    grad.addColorStop(1, '#1a252f');
     Tower.drawHexPath(ctx, baseR);
     ctx.fillStyle = grad;
     ctx.fill();
     ctx.strokeStyle = '#0f1720';
     ctx.lineWidth = 2;
     ctx.stroke();
-
-    // 4. 砲管 (依據 angle 旋轉與 recoil 後座力位移)
-    ctx.save();
-    ctx.rotate(this.angle);
-    ctx.fillStyle = '#0f1720';
-    ctx.fillRect(-this.recoil, -4, barrelLen, 8);
-    ctx.fillStyle = '#334a5a';
-    ctx.fillRect(-this.recoil, -2, barrelLen, 4);
-
-    // 槍口能量環
-    ctx.fillStyle = '#4fd1c5';
-    ctx.fillRect(barrelLen - this.recoil - 3, -3, 3, 6);
     ctx.restore();
 
-    // 5. 砲塔頂部旋轉核心圓盤 (Turret)
-    const turretGrad = ctx.createRadialGradient(-3, -3, 1, 0, 0, turretR);
-    turretGrad.addColorStop(0, '#8fe9df');
-    turretGrad.addColorStop(1, '#2a9d93');
-    ctx.beginPath();
-    ctx.arc(0, 0, turretR, 0, Math.PI * 2);
-    ctx.fillStyle = turretGrad;
-    ctx.fill();
-    ctx.strokeStyle = '#12332f';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
+    // 4. 使用 WarSpriteSheet 精靈圖繪製旋轉砲塔與後座力
+    if (towerImage) {
+      // 依等級選取第一排對應砲塔（預設為第 1 個綠色戰車砲塔）
+      const spriteIdx = Math.min(TOWER_SPRITES.length - 1, this.level - 1);
+      const frame = TOWER_SPRITES[spriteIdx];
 
-    ctx.restore();
+      // 計算帶有後座力偏移的中心點
+      const recoilOffsetX = -Math.cos(this.angle) * this.recoil;
+      const recoilOffsetY = -Math.sin(this.angle) * this.recoil;
 
-    // 6. 繪製等級標籤（置於砲塔上方）
+      SpriteRenderer.drawFrame(
+        ctx,
+        towerImage,
+        frame,
+        this.x + recoilOffsetX,
+        this.y + recoilOffsetY,
+        {
+          rotation: this.angle,
+          scale: 0.85
+        }
+      );
+    }
+
+    // 5. 繪製等級標籤（置於砲塔上方）
     this.drawLevelBadge(ctx, this.x, this.y - baseR - 6, isSelected);
   }
 }
