@@ -85,6 +85,8 @@ export class Game {
         enemy_mon1: './assets/images/enemy_mon1.png',
         enemy_mon2: './assets/images/enemy_mon2.png',
         enemy_mon3: './assets/images/enemy_mon3.png',
+        enemy_skulli: './assets/images/enemy_skulli.png',
+        enemy_mage: './assets/images/enemy_mage.png',
         enemy_skull: './assets/images/enemy_skull.png',
         enemy_spiky: './assets/images/enemy_spiky.png',
         enemy_goblin: './assets/images/enemy_goblin.png',
@@ -179,6 +181,7 @@ export class Game {
    */
   startLevel(levelId) {
     this.audioSystem.ensureAudio();
+    this.audioSystem.playBGM();
     this.currentLevelId = levelId;
     this.currentLevel = CONFIG.LEVELS.find(l => l.id === levelId) || CONFIG.LEVELS[0];
 
@@ -358,7 +361,8 @@ export class Game {
   }
 
   spawnEnemy() {
-    const enemy = new Enemy(this.currentLevel.path, this.player.wave);
+    const enemyType = this.currentLevel.enemyType || 'mon1';
+    const enemy = new Enemy(this.currentLevel.path, this.player.wave, enemyType);
     this.enemies.push(enemy);
   }
 

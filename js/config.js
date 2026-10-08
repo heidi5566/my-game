@@ -6,12 +6,13 @@ export const CONFIG = {
   CANVAS_WIDTH: 640,
   CANVAS_HEIGHT: 420,
 
-  // 關卡配置清單 (Levels 1 to 6)
+  // 關卡配置清單 (Levels 1 to 6 - 一關一種專屬魔物)
   LEVELS: [
     {
       id: 1,
       name: '第 1 關：初試啼聲',
-      desc: '經典 S 型防線，適合熟悉砲塔擺放與戰車支援。',
+      desc: '經典 S 型防線。敵方魔物：【獨眼暴龍兵】',
+      enemyType: 'mon1',
       waves: 5,
       path: [
         { x: -20, y: 60 },
@@ -28,7 +29,8 @@ export const CONFIG = {
     {
       id: 2,
       name: '第 2 關：迴旋走廊',
-      desc: 'U 型大迂迴長廊，中央具有大範圍攻擊火力優勢。',
+      desc: 'U 型大迂迴長廊。敵方魔物：【骷髏幽靈兵】',
+      enemyType: 'mon2',
       waves: 5,
       path: [
         { x: -20, y: 320 },
@@ -45,7 +47,8 @@ export const CONFIG = {
     {
       id: 3,
       name: '第 3 關：迷宮重圍',
-      desc: '雙折曲折縱深防線，過關後可解鎖第 1 隻強力寵物！',
+      desc: '雙折曲折縱深防線。敵方魔物：【吐舌翼蝠怪】（過關解鎖神寵！）',
+      enemyType: 'mon3',
       waves: 6,
       path: [
         { x: -20, y: 80 },
@@ -63,8 +66,9 @@ export const CONFIG = {
     },
     {
       id: 4,
-      name: '第 4 關：四方圍城',
-      desc: '大外環迴旋線路，考驗砲塔多角度覆蓋射程。',
+      name: '第 4 關：幽魂深淵',
+      desc: '大外環迴旋線路。敵方魔物：【Skulli 幽魂魅影】',
+      enemyType: 'skulli',
       waves: 6,
       path: [
         { x: -20, y: 340 },
@@ -82,8 +86,9 @@ export const CONFIG = {
     },
     {
       id: 5,
-      name: '第 5 關：十字深淵',
-      desc: '波浪蛇形突圍線，敵人數量大幅攀升！',
+      name: '第 5 關：魔導突襲',
+      desc: '波浪蛇形突圍線。敵方魔物：【暗黑秘術魔導士】',
+      enemyType: 'mage',
       waves: 7,
       path: [
         { x: -20, y: 100 },
@@ -104,7 +109,8 @@ export const CONFIG = {
     {
       id: 6,
       name: '第 6 關：終極試煉',
-      desc: '螺旋迴轉大迷宮，過關後可解鎖第 2 隻傳奇寵物！',
+      desc: '螺旋迴轉大迷宮。敵方魔物：【尖刺大地岩獸】（過關解鎖神寵！）',
+      enemyType: 'spiky',
       waves: 8,
       path: [
         { x: -20, y: 60 },
@@ -212,67 +218,48 @@ export const CONFIG = {
     }
   ],
 
-  // 敵人輪替配置（每 3 波依序變換品種）
-  ENEMY_TYPES: [
-    {
-      id: 'mon1',
+  // 各品種魔物基本參數
+  ENEMY_DEFINITIONS: {
+    mon1: {
       name: '獨眼暴龍兵',
-      minWave: 1,
-      maxWave: 3,
       assetKey: 'enemy_mon1',
       speedMul: 1.0,
       hpMul: 1.0
     },
-    {
-      id: 'mon2',
+    mon2: {
       name: '骷髏幽靈兵',
-      minWave: 4,
-      maxWave: 6,
       assetKey: 'enemy_mon2',
-      speedMul: 1.15,
-      hpMul: 1.2
+      speedMul: 1.2,
+      hpMul: 1.15
     },
-    {
-      id: 'mon3',
+    mon3: {
       name: '吐舌翼蝠怪',
-      minWave: 7,
-      maxWave: 9,
       assetKey: 'enemy_mon3',
-      speedMul: 1.3,
-      hpMul: 1.35
+      speedMul: 1.35,
+      hpMul: 1.3
     },
-    {
-      id: 'skull',
-      name: '角顱惡魔首領',
-      minWave: 10,
-      maxWave: 12,
-      assetKey: 'enemy_skull',
-      speedMul: 0.9,
+    skulli: {
+      name: 'Skulli 幽魂魅影',
+      assetKey: 'enemy_skulli',
+      speedMul: 1.1,
+      hpMul: 1.75
+    },
+    mage: {
+      name: '暗黑秘術魔導士',
+      assetKey: 'enemy_mage',
+      speedMul: 0.95,
       hpMul: 2.2
     },
-    {
-      id: 'spiky',
+    spiky: {
       name: '尖刺大地岩獸',
-      minWave: 13,
-      maxWave: 15,
       assetKey: 'enemy_spiky',
       speedMul: 0.85,
-      hpMul: 3.0
-    },
-    {
-      id: 'goblin',
-      name: '匕首哥布林刺客',
-      minWave: 16,
-      maxWave: 999,
-      assetKey: 'enemy_goblin',
-      speedMul: 1.5,
-      hpMul: 2.5
+      hpMul: 3.2
     }
-  ],
+  },
 
-  PATH_CLEARANCE: 34, // 砲塔與路徑最小安全距離
+  PATH_CLEARANCE: 34,
 
-  // 砲塔系統設定
   TOWER: {
     MAX_COUNT: 4,
     NEW_COST: 40,
@@ -288,7 +275,6 @@ export const CONFIG = {
     MIN_FIRE_RATE: 150
   },
 
-  // 玩家初始資源
   PLAYER: {
     INITIAL_GOLD: 60,
     INITIAL_LIVES: 10,
@@ -296,13 +282,11 @@ export const CONFIG = {
     WAVE_CLEAR_REWARD: 20
   },
 
-  // 子彈數值
   BULLET: {
     SPEED: 360,
     RADIUS: 4
   },
 
-  // 敵人數值計算公式
   ENEMY: {
     SPAWN_INTERVAL: 0.65,
     getQueueCount: (wave) => 5 + wave * 2,
@@ -311,7 +295,6 @@ export const CONFIG = {
     getReward: (wave) => 5 + Math.floor(wave / 2)
   },
 
-  // 視覺顏色配置
   COLORS: {
     BG: '#0f1720',
     PANEL: '#1b2733',

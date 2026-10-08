@@ -3,7 +3,7 @@ import { CONFIG } from '../config.js';
 import { SpriteRenderer } from '../systems/SpriteRenderer.js';
 
 /**
- * 各波段敵人精靈幀配置
+ * 6 大專屬魔物精靈幀裁切設定
  */
 const ENEMY_SPRITE_CONFIGS = {
   mon1: {
@@ -47,15 +47,30 @@ const ENEMY_SPRITE_CONFIGS = {
     ],
     scale: 1.15
   },
-  skull: {
+  skulli: {
     move: [
-      { sx: 0, sy: 0, sw: 64, sh: 64 },
-      { sx: 64, sy: 0, sw: 64, sh: 64 }
+      { sx: 0, sy: 0, sw: 128, sh: 128 },
+      { sx: 128, sy: 0, sw: 128, sh: 128 },
+      { sx: 256, sy: 0, sw: 128, sh: 128 },
+      { sx: 384, sy: 0, sw: 128, sh: 128 }
     ],
     hurt: [
-      { sx: 128, sy: 0, sw: 64, sh: 64 }
+      { sx: 0, sy: 256, sw: 128, sh: 128 },
+      { sx: 128, sy: 256, sw: 128, sh: 128 }
     ],
-    scale: 0.7
+    scale: 0.35
+  },
+  mage: {
+    move: [
+      { sx: 0, sy: 0, sw: 48, sh: 64 },
+      { sx: 48, sy: 0, sw: 48, sh: 64 },
+      { sx: 96, sy: 0, sw: 48, sh: 64 }
+    ],
+    hurt: [
+      { sx: 0, sy: 64, sw: 48, sh: 64 },
+      { sx: 48, sy: 64, sw: 48, sh: 64 }
+    ],
+    scale: 0.75
   },
   spiky: {
     move: [
@@ -66,39 +81,25 @@ const ENEMY_SPRITE_CONFIGS = {
       { sx: 0, sy: 0, sw: 64, sh: 64 }
     ],
     scale: 0.7
-  },
-  goblin: {
-    move: [
-      { sx: 0, sy: 0, sw: 32, sh: 32 },
-      { sx: 32, sy: 0, sw: 32, sh: 32 },
-      { sx: 0, sy: 32, sw: 32, sh: 32 },
-      { sx: 32, sy: 32, sw: 32, sh: 32 }
-    ],
-    hurt: [
-      { sx: 0, sy: 64, sw: 32, sh: 32 },
-      { sx: 32, sy: 64, sw: 32, sh: 32 }
-    ],
-    scale: 1.15
   }
 };
 
 /**
  * 敵方實體 (Enemy Entity)
- * 依據波次輪替品種（每 3 波變換）、路徑巡航、血量計算、方向鏡像反轉
+ * 依據關卡設定生成專屬品種（一關一種魔物）、血量計算、折線巡航與鏡像反轉
  */
 export class Enemy extends Entity {
-  constructor(path, wave = 1) {
+  constructor(path, wave = 1, enemyType = 'mon1') {
     super(path[0].x, path[0].y);
 
-    // 決定敵人品種
-    const typeConfig = CONFIG.ENEMY_TYPES.find(t => wave >= t.minWave && wave <= t.maxWave) || CONFIG.ENEMY_TYPES[CONFIG.ENEMY_TYPES.length - 1];
-    this.typeId = typeConfig.id;
-    this.assetKey = typeConfig.assetKey;
+    this.typeId = enemyType;
+    const typeDef = CONFIG.ENEMY_DEFINITIONS[enemyType] || CONFIG.ENEMY_DEFINITIONS.mon1;
+    this.assetKey = typeDef.assetKey;
 
-    const baseHp = CONFIG.ENEMY.getBaseHp(wave) * (typeConfig.hpMul || 1.0);
+    const baseHp = CONFIG.ENEMY.getBaseHp(wave) * (typeDef.hpMul || 1.0);
     this.hp = baseHp;
     this.maxHp = baseHp;
-    this.speed = CONFIG.ENEMY.getSpeed(wave) * (typeConfig.speedMul || 1.0);
+    this.speed = CONFIG.ENEMY.getSpeed(wave) * (typeDef.speedMul || 1.0);
     this.reward = CONFIG.ENEMY.getReward(wave);
     this.phase = Math.random() * Math.PI * 2;
     this.seg = 0;
@@ -178,8 +179,8 @@ export class Enemy extends Entity {
       const frame = currentAnim[this.frameIndex % currentAnim.length];
       const scale = spriteCfg.scale || 1.0;
 
-      // 幽靈怪飄動特效
-      const floatY = (this.typeId === 'mon2' || this.typeId === 'skull') ? Math.sin(now / 150 + this.phase) * 3 : 0;
+      // 幽靈飄動特效
+      const floatY = (this.typeId === 'mon2' || this.typeId === 'skulli') ? Math.sin(now / 150 + this.phase) * 3 : 0;
 
       SpriteRenderer.drawFrame(ctx, spriteImage, frame, this.x, this.y + floatY, {
         flipX: this.facingLeft,

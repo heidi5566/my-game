@@ -24,6 +24,7 @@ export class AudioSystem {
       this.bgmAudio.src = './assets/audio/bgm.mp3';
       this.bgmAudio.loop = true;
       this.bgmAudio.volume = 0.35;
+      this.bgmAudio.preload = 'auto';
     } catch (e) {
       console.warn('[AudioSystem] 初始化 BGM 音訊物件失敗:', e);
     }
@@ -42,12 +43,7 @@ export class AudioSystem {
     if (this.audioCtx && this.audioCtx.state === 'suspended') {
       this.audioCtx.resume().catch(() => {});
     }
-    if (!this.unlocked) {
-      this.unlocked = true;
-      if (this.musicOn) {
-        this.playBGM();
-      }
-    }
+    this.unlocked = true;
   }
 
   /**
@@ -55,7 +51,11 @@ export class AudioSystem {
    */
   playBGM() {
     if (!this.musicOn || !this.bgmAudio) return;
+    this.ensureAudio();
+
     try {
+      this.bgmAudio.muted = false;
+      this.bgmAudio.volume = 0.35;
       const playPromise = this.bgmAudio.play();
       if (playPromise !== undefined) {
         playPromise
@@ -63,7 +63,7 @@ export class AudioSystem {
             this.bgmPlaying = true;
           })
           .catch((err) => {
-            // 自動播放受限時靜默等待玩家後續操作
+            console.warn('[AudioSystem] BGM 自動播放等待手勢解鎖:', err);
             this.bgmPlaying = false;
           });
       }
@@ -150,7 +150,6 @@ export class AudioSystem {
     if (!this.soundOn) return;
     this.ensureAudio();
 
-    // 嘗試使用自定義 SFX 音訊檔
     const sfxHit = this.assetManager ? this.assetManager.getAudio('sfx_hit') : null;
     if (sfxHit && sfxHit.src) {
       try {
@@ -183,7 +182,7 @@ export class AudioSystem {
   }
 
   /**
-   * 播放炸彈/敵人爆炸音效（低通濾波白噪音與重低音）
+   * 播放炸彈/敵人爆炸音效
    */
   playExplosion() {
     if (!this.soundOn) return;
