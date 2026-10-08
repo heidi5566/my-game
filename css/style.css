@@ -133,6 +133,14 @@ html, body {
   color: var(--accent);
 }
 
+.menu-footer {
+  margin-top: 24px;
+  font-size: 13px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  opacity: 0.85;
+}
+
 /* 戰鬥畫面 HUD */
 #topBar {
   display: flex;
