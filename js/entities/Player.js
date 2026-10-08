@@ -27,21 +27,17 @@ const CHARACTER_FRAMES = {
   },
   platina: {
     idle: [
-      { sx: 5, sy: 5, sw: 20, sh: 25 },
-      { sx: 30, sy: 5, sw: 20, sh: 25 },
-      { sx: 55, sy: 5, sw: 20, sh: 25 }
+      { sx: 19, sy: 38, sw: 13, sh: 17 }
     ],
     attack: [
-      { sx: 5, sy: 32, sw: 20, sh: 26 },
-      { sx: 28, sy: 32, sw: 20, sh: 26 },
-      { sx: 50, sy: 32, sw: 20, sh: 26 },
-      { sx: 72, sy: 32, sw: 20, sh: 26 }
+      { sx: 19, sy: 38, sw: 13, sh: 17 },
+      { sx: 36, sy: 38, sw: 12, sh: 17 },
+      { sx: 19, sy: 38, sw: 13, sh: 17 }
     ],
     hurt: [
-      { sx: 5, sy: 60, sw: 22, sh: 28 },
-      { sx: 30, sy: 60, sw: 24, sh: 28 }
+      { sx: 19, sy: 38, sw: 13, sh: 17 }
     ],
-    scale: 1.4
+    scale: 2.2
   },
   knight: {
     idle: [
