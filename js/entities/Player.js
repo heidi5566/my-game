@@ -62,18 +62,18 @@ const CHARACTER_FRAMES = {
   },
   mage: {
     idle: [
-      { sx: 0, sy: 0, sw: 48, sh: 64 },
-      { sx: 48, sy: 0, sw: 48, sh: 64 },
-      { sx: 96, sy: 0, sw: 48, sh: 64 }
+      { sx: 192, sy: 128, sw: 48, sh: 64 },
+      { sx: 144, sy: 128, sw: 48, sh: 64 },
+      { sx: 240, sy: 128, sw: 48, sh: 64 }
     ],
     attack: [
-      { sx: 0, sy: 64, sw: 48, sh: 64 },
-      { sx: 48, sy: 64, sw: 48, sh: 64 },
-      { sx: 96, sy: 64, sw: 48, sh: 64 }
+      { sx: 144, sy: 128, sw: 48, sh: 64 },
+      { sx: 192, sy: 128, sw: 48, sh: 64 },
+      { sx: 240, sy: 128, sw: 48, sh: 64 }
     ],
     hurt: [
-      { sx: 0, sy: 128, sw: 48, sh: 64 },
-      { sx: 48, sy: 128, sw: 48, sh: 64 }
+      { sx: 192, sy: 128, sw: 48, sh: 64 },
+      { sx: 192, sy: 64, sw: 48, sh: 64 }
     ],
     scale: 0.75
   },
