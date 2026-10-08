@@ -29,7 +29,7 @@ export const CONFIG = {
     {
       id: 2,
       name: '第 2 關：迴旋走廊',
-      desc: 'U 型大迂迴長廊。敵方魔物：【骷髏幽靈兵】',
+      desc: 'U 型大迂迴長廊。敵方魔物：【骷髏幽靈兵】（過關解鎖神寵：熾焰火靈鳥）',
       enemyType: 'mon2',
       waves: 5,
       path: [
@@ -47,7 +47,7 @@ export const CONFIG = {
     {
       id: 3,
       name: '第 3 關：迷宮重圍',
-      desc: '雙折曲折縱深防線。敵方魔物：【吐舌翼蝠怪】（過關解鎖神寵！）',
+      desc: '雙折曲折縱深防線。敵方魔物：【吐舌翼蝠怪】（過關解鎖神寵：蒼穹疾風鳥）',
       enemyType: 'mon3',
       waves: 6,
       path: [
@@ -67,7 +67,7 @@ export const CONFIG = {
     {
       id: 4,
       name: '第 4 關：幽魂深淵',
-      desc: '大外環迴旋線路。敵方魔物：【Skulli 幽魂魅影】',
+      desc: '大外環迴旋線路。敵方魔物：【Skulli 幽魂魅影】（過關解鎖神寵：幻彩極光鳥）',
       enemyType: 'skulli',
       waves: 6,
       path: [
@@ -87,7 +87,7 @@ export const CONFIG = {
     {
       id: 5,
       name: '第 5 關：魔導突襲',
-      desc: '波浪蛇形突圍線。敵方魔物：【暗黑秘術魔導士】',
+      desc: '波浪蛇形突圍線。敵方魔物：【暗黑秘術魔導士】（過關解鎖神寵：未來光能鳥）',
       enemyType: 'mage',
       waves: 7,
       path: [
@@ -109,7 +109,7 @@ export const CONFIG = {
     {
       id: 6,
       name: '第 6 關：終極試煉',
-      desc: '螺旋迴轉大迷宮。敵方魔物：【尖刺大地岩獸】（過關解鎖神寵！）',
+      desc: '螺旋迴轉大迷宮。敵方魔物：【尖刺大地岩獸】（通關解鎖終極神寵：暗夜幽影鳥！）',
       enemyType: 'spiky',
       waves: 8,
       path: [
@@ -174,45 +174,45 @@ export const CONFIG = {
     }
   ],
 
-  // 寵物系統（每過 3 關解鎖 1 隻）
+  // 寵物系統（共 5 款神寵，隨關卡進度逐步解鎖）
   PETS: [
     {
       id: 'flame_bird',
       name: '熾焰火靈鳥',
-      unlockLevel: 3,
-      desc: '通關第 3 關獲得！散發烈焰光環，使砲塔傷害 +15%',
+      unlockLevel: 2,
+      desc: '通關第 2 關獲得！散發烈焰光環，使砲塔傷害 +15%',
       frame: { sx: 14, sy: 0, sw: 14, sh: 16 },
       buff: { damageMul: 1.15 }
     },
     {
       id: 'azure_bird',
       name: '蒼穹疾風鳥',
-      unlockLevel: 6,
-      desc: '通關第 6 關獲得！疾風祝福使砲塔射速 +20%',
+      unlockLevel: 3,
+      desc: '通關第 3 關獲得！疾風祝福使砲塔射速 +20%',
       frame: { sx: 0, sy: 0, sw: 14, sh: 16 },
       buff: { fireRateMul: 0.8 }
     },
     {
       id: 'aurora_bird',
       name: '幻彩極光鳥',
-      unlockLevel: 9,
-      desc: '通關第 9 關獲得！每擊殺一隻敵人額外掉落 +1 金幣',
+      unlockLevel: 4,
+      desc: '通關第 4 關獲得！每擊殺一隻敵人額外掉落 +1 金幣',
       frame: { sx: 42, sy: 16, sw: 14, sh: 16 },
       buff: { extraKillGold: 1 }
     },
     {
       id: 'cyber_bird',
       name: '未來光能鳥',
-      unlockLevel: 12,
-      desc: '通關第 12 關獲得！全砲塔瞄準射程 +25%',
+      unlockLevel: 5,
+      desc: '通關第 5 關獲得！全砲塔瞄準射程 +25%',
       frame: { sx: 0, sy: 16, sw: 14, sh: 16 },
       buff: { rangeMul: 1.25 }
     },
     {
       id: 'shadow_bird',
       name: '暗夜幽影鳥',
-      unlockLevel: 15,
-      desc: '通關第 15 關獲得！賦予砲塔 25% 暴擊造成雙倍傷害',
+      unlockLevel: 6,
+      desc: '通關第 6 關獲得！終極神寵！賦予砲塔 25% 暴擊造成雙倍傷害',
       frame: { sx: 56, sy: 0, sw: 14, sh: 16 },
       buff: { critChance: 0.25 }
     }

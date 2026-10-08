@@ -423,15 +423,15 @@ export class Game {
     const nextLevelId = this.currentLevelId + 1;
 
     // 解鎖新關卡存檔
-    if (this.currentLevelId >= this.unlockedLevelMax && nextLevelId <= CONFIG.LEVELS.length) {
-      this.unlockedLevelMax = nextLevelId;
+    if (this.currentLevelId >= this.unlockedLevelMax) {
+      this.unlockedLevelMax = Math.min(nextLevelId, CONFIG.LEVELS.length + 1);
       localStorage.setItem('mini_td_unlocked_level', this.unlockedLevelMax.toString());
+    }
 
-      // 檢查是否達成每 3 關解鎖新寵物條件
-      const unlockedPet = CONFIG.PETS.find(p => p.unlockLevel === this.currentLevelId);
-      if (unlockedPet) {
-        newPetMsg = `獲得新神寵【${unlockedPet.name}】！可前往「獲得寵物」裝備！`;
-      }
+    // 檢查是否達成解鎖新寵物條件
+    const unlockedPets = CONFIG.PETS.filter(p => p.unlockLevel === this.currentLevelId);
+    if (unlockedPets.length > 0) {
+      newPetMsg = `獲得新神寵【${unlockedPets.map(p => p.name).join('、')}】！可前往「獲得寵物」裝備！`;
     }
 
     const hasNext = nextLevelId <= CONFIG.LEVELS.length;
