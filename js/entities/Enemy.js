@@ -3,48 +3,102 @@ import { CONFIG } from '../config.js';
 import { SpriteRenderer } from '../systems/SpriteRenderer.js';
 
 /**
- * 敵方怪物精靈幀定義 (Enemy Sprite Frames - mon1_sprite_addon_2012_12_14.png / enemy.png)
+ * 各波段敵人精靈幀配置
  */
-const ENEMY_FRAMES = {
-  idle: [
-    { sx: 19, sy: 20, sw: 23, sh: 40 },
-    { sx: 83, sy: 20, sw: 23, sh: 40 },
-    { sx: 148, sy: 20, sw: 23, sh: 40 },
-    { sx: 212, sy: 20, sw: 23, sh: 40 }
-  ],
-  move: [
-    { sx: 19, sy: 80, sw: 23, sh: 45 },
-    { sx: 85, sy: 80, sw: 23, sh: 45 },
-    { sx: 148, sy: 80, sw: 25, sh: 45 },
-    { sx: 212, sy: 80, sw: 26, sh: 45 },
-    { sx: 276, sy: 80, sw: 25, sh: 45 }
-  ],
-  hurt: [
-    { sx: 81, sy: 205, sw: 30, sh: 50 },
-    { sx: 143, sy: 205, sw: 28, sh: 50 }
-  ],
-  dead: [
-    { sx: 19, sy: 205, sw: 23, sh: 50 },
-    { sx: 81, sy: 205, sw: 30, sh: 50 },
-    { sx: 143, sy: 205, sw: 28, sh: 50 },
-    { sx: 206, sy: 205, sw: 32, sh: 50 },
-    { sx: 271, sy: 205, sw: 31, sh: 50 },
-    { sx: 343, sy: 205, sw: 16, sh: 50 }
-  ]
+const ENEMY_SPRITE_CONFIGS = {
+  mon1: {
+    move: [
+      { sx: 19, sy: 80, sw: 23, sh: 45 },
+      { sx: 85, sy: 80, sw: 23, sh: 45 },
+      { sx: 148, sy: 80, sw: 25, sh: 45 },
+      { sx: 212, sy: 80, sw: 26, sh: 45 },
+      { sx: 276, sy: 80, sw: 25, sh: 45 }
+    ],
+    hurt: [
+      { sx: 81, sy: 205, sw: 30, sh: 50 },
+      { sx: 143, sy: 205, sw: 28, sh: 50 }
+    ],
+    scale: 1.1
+  },
+  mon2: {
+    move: [
+      { sx: 20, sy: 80, sw: 24, sh: 45 },
+      { sx: 84, sy: 80, sw: 24, sh: 45 },
+      { sx: 148, sy: 80, sw: 24, sh: 45 },
+      { sx: 212, sy: 80, sw: 24, sh: 45 }
+    ],
+    hurt: [
+      { sx: 80, sy: 210, sw: 30, sh: 48 },
+      { sx: 144, sy: 210, sw: 30, sh: 48 }
+    ],
+    scale: 1.1
+  },
+  mon3: {
+    move: [
+      { sx: 15, sy: 20, sw: 35, sh: 35 },
+      { sx: 75, sy: 20, sw: 35, sh: 35 },
+      { sx: 135, sy: 20, sw: 38, sh: 35 },
+      { sx: 195, sy: 20, sw: 38, sh: 35 },
+      { sx: 260, sy: 20, sw: 35, sh: 35 }
+    ],
+    hurt: [
+      { sx: 70, sy: 140, sw: 40, sh: 38 },
+      { sx: 135, sy: 140, sw: 40, sh: 38 }
+    ],
+    scale: 1.15
+  },
+  skull: {
+    move: [
+      { sx: 0, sy: 0, sw: 64, sh: 64 },
+      { sx: 64, sy: 0, sw: 64, sh: 64 }
+    ],
+    hurt: [
+      { sx: 128, sy: 0, sw: 64, sh: 64 }
+    ],
+    scale: 0.7
+  },
+  spiky: {
+    move: [
+      { sx: 0, sy: 0, sw: 64, sh: 64 },
+      { sx: 64, sy: 0, sw: 64, sh: 64 }
+    ],
+    hurt: [
+      { sx: 0, sy: 0, sw: 64, sh: 64 }
+    ],
+    scale: 0.7
+  },
+  goblin: {
+    move: [
+      { sx: 0, sy: 0, sw: 32, sh: 32 },
+      { sx: 32, sy: 0, sw: 32, sh: 32 },
+      { sx: 0, sy: 32, sw: 32, sh: 32 },
+      { sx: 32, sy: 32, sw: 32, sh: 32 }
+    ],
+    hurt: [
+      { sx: 0, sy: 64, sw: 32, sh: 32 },
+      { sx: 32, sy: 64, sw: 32, sh: 32 }
+    ],
+    scale: 1.15
+  }
 };
 
 /**
  * 敵方實體 (Enemy Entity)
- * 繼承自 Entity，管理巡航路徑、血量、碰撞判定，
- * 並透過 drawImage() 播放行走、受擊多幀動畫與方向反轉
+ * 依據波次輪替品種（每 3 波變換）、路徑巡航、血量計算、方向鏡像反轉
  */
 export class Enemy extends Entity {
   constructor(path, wave = 1) {
     super(path[0].x, path[0].y);
-    const baseHp = CONFIG.ENEMY.getBaseHp(wave);
+
+    // 決定敵人品種
+    const typeConfig = CONFIG.ENEMY_TYPES.find(t => wave >= t.minWave && wave <= t.maxWave) || CONFIG.ENEMY_TYPES[CONFIG.ENEMY_TYPES.length - 1];
+    this.typeId = typeConfig.id;
+    this.assetKey = typeConfig.assetKey;
+
+    const baseHp = CONFIG.ENEMY.getBaseHp(wave) * (typeConfig.hpMul || 1.0);
     this.hp = baseHp;
     this.maxHp = baseHp;
-    this.speed = CONFIG.ENEMY.getSpeed(wave);
+    this.speed = CONFIG.ENEMY.getSpeed(wave) * (typeConfig.speedMul || 1.0);
     this.reward = CONFIG.ENEMY.getReward(wave);
     this.phase = Math.random() * Math.PI * 2;
     this.seg = 0;
@@ -58,13 +112,9 @@ export class Enemy extends Entity {
     this.hurtTimer = 0;
   }
 
-  /**
-   * 沿折線路徑更新移動與轉向判定
-   */
   update(dt, path, onReachEnd) {
     if (this.dead) return;
 
-    // 更新受擊狀態
     if (this.hurtTimer > 0) {
       this.hurtTimer -= dt;
       if (this.hurtTimer <= 0) {
@@ -72,9 +122,9 @@ export class Enemy extends Entity {
       }
     }
 
-    // 更新動畫幀
     this.frameTimer += dt;
-    const currentAnim = ENEMY_FRAMES[this.state] || ENEMY_FRAMES.move;
+    const spriteCfg = ENEMY_SPRITE_CONFIGS[this.typeId] || ENEMY_SPRITE_CONFIGS.mon1;
+    const currentAnim = spriteCfg[this.state] || spriteCfg.move;
     if (this.frameTimer >= this.frameInterval) {
       this.frameTimer = 0;
       this.frameIndex = (this.frameIndex + 1) % currentAnim.length;
@@ -94,7 +144,7 @@ export class Enemy extends Entity {
     const dist = Math.hypot(dx, dy);
     const step = this.speed * dt;
 
-    // 依據 X 移動方向自動反轉鏡像 (Mirror Flip)
+    // 水平移動方向鏡像反轉
     if (dx < -0.5) {
       this.facingLeft = true;
     } else if (dx > 0.5) {
@@ -111,9 +161,6 @@ export class Enemy extends Entity {
     }
   }
 
-  /**
-   * 承受子彈傷害
-   */
   takeDamage(amount) {
     this.hp -= amount;
     this.state = 'hurt';
@@ -122,22 +169,23 @@ export class Enemy extends Entity {
     return this.hp;
   }
 
-  /**
-   * 繪製敵人精靈與血條
-   */
   render(ctx, spriteImage = null, now = 0) {
     if (this.dead) return;
 
-    // 1. 精靈圖切割繪製 (drawImage Slicing & Mirroring)
     if (spriteImage) {
-      const currentAnim = ENEMY_FRAMES[this.state] || ENEMY_FRAMES.move;
+      const spriteCfg = ENEMY_SPRITE_CONFIGS[this.typeId] || ENEMY_SPRITE_CONFIGS.mon1;
+      const currentAnim = spriteCfg[this.state] || spriteCfg.move;
       const frame = currentAnim[this.frameIndex % currentAnim.length];
-      SpriteRenderer.drawFrame(ctx, spriteImage, frame, this.x, this.y, {
+      const scale = spriteCfg.scale || 1.0;
+
+      // 幽靈怪飄動特效
+      const floatY = (this.typeId === 'mon2' || this.typeId === 'skull') ? Math.sin(now / 150 + this.phase) * 3 : 0;
+
+      SpriteRenderer.drawFrame(ctx, spriteImage, frame, this.x, this.y + floatY, {
         flipX: this.facingLeft,
-        scale: 1.1
+        scale
       });
     } else {
-      // 容錯備用幾何繪圖
       const r = 12;
       ctx.save();
       ctx.translate(this.x, this.y);
@@ -148,7 +196,7 @@ export class Enemy extends Entity {
       ctx.restore();
     }
 
-    // 2. 血條與外框
+    // 血條
     const w = 28;
     const h = 4;
     const hpRatio = Math.max(0, this.hp / this.maxHp);

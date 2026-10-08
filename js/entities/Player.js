@@ -3,45 +3,122 @@ import { CONFIG } from '../config.js';
 import { SpriteRenderer } from '../systems/SpriteRenderer.js';
 
 /**
- * 玩家動作精靈幀定義 (Player Sprite Frames - cat2_base.png / player.png)
+ * 6 大角色精靈圖幀裁切設定
  */
-const PLAYER_FRAMES = {
-  idle: [
-    { sx: 21, sy: 15, sw: 18, sh: 45 },
-    { sx: 83, sy: 15, sw: 21, sh: 45 },
-    { sx: 146, sy: 15, sw: 23, sh: 45 },
-    { sx: 211, sy: 15, sw: 22, sh: 45 }
-  ],
-  run: [
-    { sx: 21, sy: 270, sw: 17, sh: 45 },
-    { sx: 87, sy: 270, sw: 15, sh: 45 },
-    { sx: 149, sy: 270, sw: 21, sh: 45 },
-    { sx: 215, sy: 270, sw: 22, sh: 45 },
-    { sx: 277, sy: 270, sw: 24, sh: 45 },
-    { sx: 343, sy: 270, sw: 20, sh: 45 }
-  ],
-  attack: [
-    { sx: 275, sy: 15, sw: 24, sh: 45 },
-    { sx: 339, sy: 15, sw: 21, sh: 45 },
-    { sx: 402, sy: 15, sw: 22, sh: 45 },
-    { sx: 469, sy: 15, sw: 28, sh: 45 },
-    { sx: 534, sy: 15, sw: 26, sh: 45 },
-    { sx: 597, sy: 15, sw: 25, sh: 45 }
-  ],
-  hurt: [
-    { sx: 662, sy: 15, sw: 19, sh: 45 },
-    { sx: 725, sy: 15, sw: 20, sh: 45 }
-  ]
+const CHARACTER_FRAMES = {
+  cat: {
+    idle: [
+      { sx: 21, sy: 15, sw: 18, sh: 45 },
+      { sx: 83, sy: 15, sw: 21, sh: 45 },
+      { sx: 146, sy: 15, sw: 23, sh: 45 },
+      { sx: 211, sy: 15, sw: 22, sh: 45 }
+    ],
+    attack: [
+      { sx: 275, sy: 15, sw: 24, sh: 45 },
+      { sx: 339, sy: 15, sw: 21, sh: 45 },
+      { sx: 402, sy: 15, sw: 22, sh: 45 },
+      { sx: 469, sy: 15, sw: 28, sh: 45 }
+    ],
+    hurt: [
+      { sx: 662, sy: 15, sw: 19, sh: 45 },
+      { sx: 725, sy: 15, sw: 20, sh: 45 }
+    ],
+    scale: 1.15
+  },
+  platina: {
+    idle: [
+      { sx: 5, sy: 5, sw: 20, sh: 25 },
+      { sx: 30, sy: 5, sw: 20, sh: 25 },
+      { sx: 55, sy: 5, sw: 20, sh: 25 }
+    ],
+    attack: [
+      { sx: 5, sy: 32, sw: 20, sh: 26 },
+      { sx: 28, sy: 32, sw: 20, sh: 26 },
+      { sx: 50, sy: 32, sw: 20, sh: 26 },
+      { sx: 72, sy: 32, sw: 20, sh: 26 }
+    ],
+    hurt: [
+      { sx: 5, sy: 60, sw: 22, sh: 28 },
+      { sx: 30, sy: 60, sw: 24, sh: 28 }
+    ],
+    scale: 1.4
+  },
+  knight: {
+    idle: [
+      { sx: 0, sy: 0, sw: 70, sh: 50 },
+      { sx: 70, sy: 0, sw: 70, sh: 50 },
+      { sx: 140, sy: 0, sw: 70, sh: 50 },
+      { sx: 210, sy: 0, sw: 70, sh: 50 }
+    ],
+    attack: [
+      { sx: 280, sy: 0, sw: 70, sh: 50 },
+      { sx: 350, sy: 0, sw: 70, sh: 50 },
+      { sx: 420, sy: 0, sw: 70, sh: 50 },
+      { sx: 490, sy: 0, sw: 70, sh: 50 },
+      { sx: 560, sy: 0, sw: 70, sh: 50 },
+      { sx: 630, sy: 0, sw: 70, sh: 50 }
+    ],
+    hurt: [
+      { sx: 700, sy: 0, sw: 70, sh: 50 },
+      { sx: 770, sy: 0, sw: 70, sh: 50 }
+    ],
+    scale: 0.8
+  },
+  mage: {
+    idle: [
+      { sx: 0, sy: 0, sw: 48, sh: 64 },
+      { sx: 48, sy: 0, sw: 48, sh: 64 },
+      { sx: 96, sy: 0, sw: 48, sh: 64 }
+    ],
+    attack: [
+      { sx: 0, sy: 64, sw: 48, sh: 64 },
+      { sx: 48, sy: 64, sw: 48, sh: 64 },
+      { sx: 96, sy: 64, sw: 48, sh: 64 }
+    ],
+    hurt: [
+      { sx: 0, sy: 128, sw: 48, sh: 64 },
+      { sx: 48, sy: 128, sw: 48, sh: 64 }
+    ],
+    scale: 0.75
+  },
+  dog: {
+    idle: [
+      { sx: 0, sy: 0, sw: 35, sh: 47 }
+    ],
+    attack: [
+      { sx: 0, sy: 0, sw: 35, sh: 47 }
+    ],
+    hurt: [
+      { sx: 0, sy: 0, sw: 35, sh: 47 }
+    ],
+    scale: 0.95
+  },
+  bard: {
+    idle: [
+      { sx: 0, sy: 0, sw: 32, sh: 32 },
+      { sx: 32, sy: 0, sw: 32, sh: 32 },
+      { sx: 64, sy: 0, sw: 32, sh: 32 }
+    ],
+    attack: [
+      { sx: 0, sy: 32, sw: 32, sh: 32 },
+      { sx: 32, sy: 32, sw: 32, sh: 32 },
+      { sx: 64, sy: 32, sw: 32, sh: 32 }
+    ],
+    hurt: [
+      { sx: 0, sy: 64, sw: 32, sh: 32 },
+      { sx: 32, sy: 64, sw: 32, sh: 32 }
+    ],
+    scale: 1.25
+  }
 };
 
 /**
  * 玩家/防線指揮官實體 (Player / Commander Entity)
- * 繼承自 Entity 基類，管理防禦陣地核心資源（金幣、生命、擊殺與建造狀態），
- * 並透過 drawImage() 播放待機、攻擊、受擊多幀動畫與方向反轉
  */
 export class Player extends Entity {
-  constructor(x = 615, y = 80) {
+  constructor(x = 610, y = 80, characterId = 'cat') {
     super(x, y);
+    this.characterId = characterId;
     this.gold = CONFIG.PLAYER.INITIAL_GOLD;
     this.lives = CONFIG.PLAYER.INITIAL_LIVES;
     this.kills = 0;
@@ -50,20 +127,23 @@ export class Player extends Entity {
     this.placingMode = false;
 
     // 動畫狀態
-    this.state = 'idle'; // 'idle', 'run', 'attack', 'hurt'
+    this.state = 'idle';
     this.frameIndex = 0;
     this.frameTimer = 0;
-    this.frameInterval = 0.14; // 秒/幀
+    this.frameInterval = 0.14;
     this.stateTimer = 0;
-    this.facingLeft = true; // 預設面向戰場左側迎敵
+    this.facingLeft = true;
   }
 
   /**
    * 重設玩家狀態
    */
-  reset() {
-    this.gold = CONFIG.PLAYER.INITIAL_GOLD;
-    this.lives = CONFIG.PLAYER.INITIAL_LIVES;
+  reset(characterConfig = null, bonusGold = 0, bonusLives = 0) {
+    if (characterConfig) {
+      this.characterId = characterConfig.id;
+    }
+    this.gold = CONFIG.PLAYER.INITIAL_GOLD + bonusGold;
+    this.lives = CONFIG.PLAYER.INITIAL_LIVES + bonusLives;
     this.kills = 0;
     this.wave = CONFIG.PLAYER.INITIAL_WAVE;
     this.selectedTower = null;
@@ -83,20 +163,14 @@ export class Player extends Entity {
     if (this.state !== 'hurt') {
       this.state = 'attack';
       this.frameIndex = 0;
-      this.stateTimer = 0.5;
+      this.stateTimer = 0.45;
     }
   }
 
-  /**
-   * 檢查金幣是否足夠
-   */
   canAfford(cost) {
     return this.gold >= cost;
   }
 
-  /**
-   * 扣除金幣
-   */
   spendGold(cost) {
     if (this.canAfford(cost)) {
       this.gold -= cost;
@@ -106,23 +180,14 @@ export class Player extends Entity {
     return false;
   }
 
-  /**
-   * 增加金幣
-   */
   addGold(amount) {
     this.gold += amount;
   }
 
-  /**
-   * 增加擊殺數
-   */
   addKill() {
     this.kills += 1;
   }
 
-  /**
-   * 承受傷害（敵人突破防線）
-   */
   takeDamage(amount = 1) {
     this.lives -= amount;
     this.state = 'hurt';
@@ -135,9 +200,6 @@ export class Player extends Entity {
     return this.dead;
   }
 
-  /**
-   * 更新動畫幀計時
-   */
   update(dt) {
     this.frameTimer += dt;
     if (this.stateTimer > 0) {
@@ -148,21 +210,19 @@ export class Player extends Entity {
       }
     }
 
-    const currentAnim = PLAYER_FRAMES[this.state] || PLAYER_FRAMES.idle;
+    const charFrames = CHARACTER_FRAMES[this.characterId] || CHARACTER_FRAMES.cat;
+    const currentAnim = charFrames[this.state] || charFrames.idle;
     if (this.frameTimer >= this.frameInterval) {
       this.frameTimer = 0;
       this.frameIndex = (this.frameIndex + 1) % currentAnim.length;
     }
   }
 
-  /**
-   * 繪製基地終點防護核心與指揮官精靈
-   */
   render(ctx, spriteImage = null) {
     ctx.save();
     ctx.translate(this.x, this.y);
 
-    // 1. 終點防線防護光圈 (Portal / Base Aura)
+    // 1. 終點防線防護光圈
     ctx.beginPath();
     ctx.arc(0, 0, 22, 0, Math.PI * 2);
     ctx.strokeStyle = this.state === 'hurt' ? 'rgba(245, 101, 101, 0.8)' : 'rgba(79, 209, 197, 0.6)';
@@ -179,19 +239,25 @@ export class Player extends Entity {
 
     ctx.restore();
 
-    // 2. 指揮官精靈圖繪製 (drawImage 切分多幀與左右鏡像翻轉)
+    // 2. 指揮官精靈圖繪製
     if (spriteImage) {
-      const currentAnim = PLAYER_FRAMES[this.state] || PLAYER_FRAMES.idle;
+      const charFrames = CHARACTER_FRAMES[this.characterId] || CHARACTER_FRAMES.cat;
+      const currentAnim = charFrames[this.state] || charFrames.idle;
       const frame = currentAnim[this.frameIndex % currentAnim.length];
-      SpriteRenderer.drawFrame(ctx, spriteImage, frame, this.x, this.y - 2, {
+      const scale = charFrames.scale || 1.0;
+
+      // 如果是 dog 增加呼吸彈跳
+      const offsetY = this.characterId === 'dog' ? Math.sin(Date.now() / 150) * 2 : 0;
+
+      SpriteRenderer.drawFrame(ctx, spriteImage, frame, this.x, this.y - 2 + offsetY, {
         flipX: this.facingLeft,
-        scale: 1.15
+        scale
       });
     }
 
     // 3. 指揮官標籤
     ctx.save();
-    ctx.font = '10px sans-serif';
+    ctx.font = 'bold 10px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = '#4fd1c5';
     ctx.fillText('COMMANDER', this.x, this.y - 28);

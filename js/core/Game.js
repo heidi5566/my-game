@@ -7,13 +7,14 @@ import { Player } from '../entities/Player.js';
 import { Tower } from '../entities/Tower.js';
 import { Enemy } from '../entities/Enemy.js';
 import { Bullet } from '../entities/Bullet.js';
+import { Pet } from '../entities/Pet.js';
 import { HUD } from '../ui/HUD.js';
 import { InputHandler } from './InputHandler.js';
 import { GameLoop } from './GameLoop.js';
 
 /**
  * 遊戲主引擎主控器 (Game Controller / Engine)
- * 負責協調實體、精靈圖繪製、音訊管理、物理判定、波次排程與視圖更新
+ * 負責協調主選單、多關卡路線生成、角色選擇、寵物增益、波次魔物輪替與戰鬥循環
  */
 export class Game {
   constructor(canvasId = 'game') {
@@ -25,27 +26,36 @@ export class Game {
     this.width = this.canvas.width;
     this.height = this.canvas.height;
 
-    // 資源管理與系統模組
+    // 系統模組
     this.assetManager = new AssetManager();
     this.audioSystem = new AudioSystem(this.assetManager);
     this.particleSystem = new ParticleSystem();
     this.hud = new HUD();
     this.inputHandler = new InputHandler(this.canvas);
 
-    // 實體與狀態
-    this.player = new Player(610, 80);
+    // 持久化進度讀取 (localStorage)
+    this.unlockedLevelMax = parseInt(localStorage.getItem('mini_td_unlocked_level') || '1', 10);
+    this.selectedCharId = localStorage.getItem('mini_td_selected_char') || 'cat';
+    this.selectedPetId = localStorage.getItem('mini_td_selected_pet') || null;
+
+    // 當前關卡與實體
+    this.currentLevelId = 1;
+    this.currentLevel = CONFIG.LEVELS[0];
+    this.player = new Player(610, 80, this.selectedCharId);
+    this.pet = null;
     this.towers = [];
     this.enemies = [];
     this.bullets = [];
 
-    // 波次控制
+    // 遊戲狀態與波次
+    this.gameState = 'MENU'; // 'MENU' | 'PLAYING'
     this.waveActive = false;
     this.spawnQueue = 0;
     this.spawnTimer = 0;
     this.gameOver = false;
     this.isLoaded = false;
 
-    // 遊戲循環
+    // 循環
     this.loop = new GameLoop(
       (dt, now) => this.update(dt, now),
       (now) => this.render(now)
@@ -58,12 +68,27 @@ export class Game {
   async init() {
     this.hud.showLoading();
 
-    // 宣告相對路徑資源清單（防止 GitHub Pages 絕對路徑破壞）
     const manifest = {
       images: {
-        background: './assets/images/background.png',
-        player: './assets/images/player.png',
-        enemy: './assets/images/enemy.png',
+        bg_level_1: './assets/images/bg_level_1.png',
+        bg_level_2: './assets/images/bg_level_2.png',
+        bg_level_3: './assets/images/bg_level_3.png',
+        bg_level_4: './assets/images/bg_level_4.png',
+        bg_level_5: './assets/images/bg_level_5.png',
+        bg_level_6: './assets/images/bg_level_6.png',
+        char_cat: './assets/images/char_cat.png',
+        char_platina: './assets/images/char_platina.png',
+        char_knight: './assets/images/char_knight.png',
+        char_mage: './assets/images/char_mage.png',
+        char_dog: './assets/images/char_dog.png',
+        char_bard: './assets/images/char_bard.png',
+        enemy_mon1: './assets/images/enemy_mon1.png',
+        enemy_mon2: './assets/images/enemy_mon2.png',
+        enemy_mon3: './assets/images/enemy_mon3.png',
+        enemy_skull: './assets/images/enemy_skull.png',
+        enemy_spiky: './assets/images/enemy_spiky.png',
+        enemy_goblin: './assets/images/enemy_goblin.png',
+        pet_sheet: './assets/images/pet_sheet.png',
         tower: './assets/images/tower.png',
         effects: './assets/images/effects.png'
       },
@@ -78,15 +103,16 @@ export class Game {
         this.hud.updateLoadingProgress(loaded, total);
       });
     } catch (err) {
-      console.warn('[GameEngine] 資源預載入警告 (啟動備用保護機制):', err);
+      console.warn('[GameEngine] 資源預載入警示:', err);
     } finally {
       this.isLoaded = true;
       this.hud.hideLoading();
     }
 
-    this.setupInitialState();
+    this.setupPet();
     this.setupEventHandlers();
-    this.hud.update(this.getHUDState());
+    this.refreshMenuDisplay();
+    this.hud.showScreen('menu');
   }
 
   /**
@@ -98,14 +124,82 @@ export class Game {
   }
 
   /**
-   * 設定初始砲塔與數據
+   * 設定與更新上陣寵物
    */
-  setupInitialState() {
-    this.player.reset();
+  setupPet() {
+    if (this.selectedPetId) {
+      const petCfg = CONFIG.PETS.find(p => p.id === this.selectedPetId);
+      if (petCfg) {
+        this.pet = new Pet(petCfg, this.player.x, this.player.y);
+      } else {
+        this.pet = null;
+      }
+    } else {
+      this.pet = null;
+    }
+  }
+
+  /**
+   * 刷新主選單看板與彈窗清單
+   */
+  refreshMenuDisplay() {
+    const charCfg = CONFIG.CHARACTERS.find(c => c.id === this.selectedCharId) || CONFIG.CHARACTERS[0];
+    const petCfg = CONFIG.PETS.find(p => p.id === this.selectedPetId);
+
+    this.hud.updateMenuStats(
+      this.unlockedLevelMax,
+      charCfg.name,
+      petCfg ? petCfg.name : '無'
+    );
+
+    this.hud.renderLevelGrid(this.unlockedLevelMax, this.currentLevelId, (lvlId) => {
+      this.startLevel(lvlId);
+    });
+
+    this.hud.renderCharGrid(this.selectedCharId, (charId) => {
+      this.selectedCharId = charId;
+      localStorage.setItem('mini_td_selected_char', charId);
+      this.refreshMenuDisplay();
+    });
+
+    this.hud.renderPetGrid(this.unlockedLevelMax, this.selectedPetId, (petId) => {
+      this.selectedPetId = petId;
+      if (petId) {
+        localStorage.setItem('mini_td_selected_pet', petId);
+      } else {
+        localStorage.removeItem('mini_td_selected_pet');
+      }
+      this.setupPet();
+      this.refreshMenuDisplay();
+    });
+  }
+
+  /**
+   * 載入並開始指定關卡
+   */
+  startLevel(levelId) {
+    this.audioSystem.ensureAudio();
+    this.currentLevelId = levelId;
+    this.currentLevel = CONFIG.LEVELS.find(l => l.id === levelId) || CONFIG.LEVELS[0];
+
+    const charCfg = CONFIG.CHARACTERS.find(c => c.id === this.selectedCharId) || CONFIG.CHARACTERS[0];
+    const bonusGold = charCfg.perk?.startGoldBonus || 0;
+    const bonusLives = charCfg.perk?.bonusLives || 0;
+
+    // 重設玩家與指揮官位置
+    this.player.x = this.currentLevel.commanderPos.x;
+    this.player.y = this.currentLevel.commanderPos.y;
+    this.player.reset(charCfg, bonusGold, bonusLives);
+
+    // 重新佈設上陣寵物
+    this.setupPet();
+
+    // 清空玩家自由擺放的舊砲塔，重設該關初始防禦塔
     this.towers = [
-      new Tower(CONFIG.TOWER.INITIAL_POSITION.x, CONFIG.TOWER.INITIAL_POSITION.y)
+      new Tower(this.currentLevel.initialTower.x, this.currentLevel.initialTower.y)
     ];
     this.player.selectedTower = this.towers[0];
+
     this.enemies = [];
     this.bullets = [];
     this.particleSystem.clear();
@@ -115,30 +209,19 @@ export class Game {
     this.gameOver = false;
     this.player.placingMode = false;
     this.inputHandler.setCursorPlacing(false);
-    this.hud.showMessage('');
+
+    this.gameState = 'PLAYING';
+    this.hud.showScreen('game');
+    this.hud.showMessage(`進入 ${this.currentLevel.name}！請部署防線。`, 2500);
     this.hud.setStartWaveDisabled(false);
     this.hud.hideOverlay();
-  }
-
-  /**
-   * 封裝 HUD 當前狀態資訊
-   */
-  getHUDState() {
-    return {
-      wave: this.player.wave,
-      gold: this.player.gold,
-      lives: this.player.lives,
-      kills: this.player.kills,
-      selectedTower: this.player.selectedTower,
-      towerCount: this.towers.length
-    };
+    this.updateHUD();
   }
 
   /**
    * 綁定使用者操作與按鈕事件
    */
   setupEventHandlers() {
-    // 首次任意使用者交互（點擊、鍵盤）解鎖瀏覽器 Autoplay Policy
     const unlockOnFirstGesture = () => {
       this.audioSystem.ensureAudio();
       window.removeEventListener('pointerdown', unlockOnFirstGesture);
@@ -147,12 +230,36 @@ export class Game {
     window.addEventListener('pointerdown', unlockOnFirstGesture, { once: true });
     window.addEventListener('keydown', unlockOnFirstGesture, { once: true });
 
-    // 綁定 HUD 按鈕事件
     this.hud.bindEvents({
+      onOpenLevelModal: () => {
+        this.audioSystem.ensureAudio();
+        this.refreshMenuDisplay();
+        this.hud.openModal(this.hud.levelModal);
+      },
+      onOpenCharModal: () => {
+        this.audioSystem.ensureAudio();
+        this.refreshMenuDisplay();
+        this.hud.openModal(this.hud.charModal);
+      },
+      onOpenPetModal: () => {
+        this.audioSystem.ensureAudio();
+        this.refreshMenuDisplay();
+        this.hud.openModal(this.hud.petModal);
+      },
+      onBackToMenu: () => {
+        this.gameState = 'MENU';
+        this.refreshMenuDisplay();
+        this.hud.showScreen('menu');
+      },
       onStartWave: () => this.startWave(),
       onTogglePlace: () => this.togglePlacingMode(),
       onUpgrade: () => this.upgradeSelectedTower(),
-      onRestart: () => this.resetGame(),
+      onRestart: () => this.startLevel(this.currentLevelId),
+      onNextLevel: () => {
+        if (this.currentLevelId < CONFIG.LEVELS.length) {
+          this.startLevel(this.currentLevelId + 1);
+        }
+      },
       onToggleSound: () => {
         const soundOn = this.audioSystem.toggleSound();
         this.hud.setSoundState(soundOn);
@@ -163,16 +270,12 @@ export class Game {
       }
     });
 
-    // 綁定畫布點擊事件
     this.inputHandler.onClick = (pos) => this.handleCanvasClick(pos);
   }
 
-  /**
-   * 處理畫布點擊邏輯（選取砲塔或放置新砲塔）
-   */
   handleCanvasClick(pos) {
     this.audioSystem.ensureAudio();
-    if (this.gameOver) return;
+    if (this.gameState !== 'PLAYING' || this.gameOver) return;
 
     if (this.player.placingMode) {
       if (!this.player.canAfford(CONFIG.TOWER.NEW_COST)) {
@@ -182,7 +285,7 @@ export class Game {
 
       const isValid = Physics.isValidPlacement(
         pos.x, pos.y,
-        CONFIG.PATH,
+        this.currentLevel.path,
         this.towers,
         CONFIG.PATH_CLEARANCE,
         CONFIG.TOWER.MIN_GAP,
@@ -194,7 +297,6 @@ export class Game {
         return;
       }
 
-      // 成功扣款建造
       this.player.spendGold(CONFIG.TOWER.NEW_COST);
       const newTower = new Tower(pos.x, pos.y);
       this.towers.push(newTower);
@@ -203,11 +305,10 @@ export class Game {
       this.inputHandler.setCursorPlacing(false);
       this.hud.showMessage('新砲塔已成功部署！', 1800);
       this.audioSystem.playPlace();
-      this.hud.update(this.getHUDState());
+      this.updateHUD();
       return;
     }
 
-    // 點擊選取場上現存砲塔
     let clicked = null;
     for (const t of this.towers) {
       if (Physics.pointDist(pos.x, pos.y, t.x, t.y) <= t.getHitRadius()) {
@@ -218,13 +319,10 @@ export class Game {
 
     if (clicked) {
       this.player.selectedTower = clicked;
-      this.hud.update(this.getHUDState());
+      this.updateHUD();
     }
   }
 
-  /**
-   * 切換放置新砲塔模式
-   */
   togglePlacingMode() {
     this.audioSystem.ensureAudio();
     if (!this.player.canAfford(CONFIG.TOWER.NEW_COST) || this.towers.length >= CONFIG.TOWER.MAX_COUNT) {
@@ -238,22 +336,16 @@ export class Game {
     );
   }
 
-  /**
-   * 升級當前選取的砲塔
-   */
   upgradeSelectedTower() {
     this.audioSystem.ensureAudio();
     if (this.player.selectedTower && this.player.canAfford(CONFIG.TOWER.UPGRADE_COST)) {
       this.player.spendGold(CONFIG.TOWER.UPGRADE_COST);
       this.player.selectedTower.upgrade();
       this.audioSystem.playUpgrade();
-      this.hud.update(this.getHUDState());
+      this.updateHUD();
     }
   }
 
-  /**
-   * 開始新波次
-   */
   startWave() {
     this.audioSystem.ensureAudio();
     if (this.waveActive || this.gameOver) return;
@@ -265,41 +357,83 @@ export class Game {
     this.hud.setStartWaveDisabled(true);
   }
 
-  /**
-   * 產生單一敵人
-   */
   spawnEnemy() {
-    const enemy = new Enemy(CONFIG.PATH, this.player.wave);
+    const enemy = new Enemy(this.currentLevel.path, this.player.wave);
     this.enemies.push(enemy);
   }
 
-  /**
-   * 發射子彈
-   */
-  fireBullet(fromTower, target, damage) {
+  fireBullet(fromTower, target, baseDamage) {
+    let damage = baseDamage;
+
+    // 角色加成
+    const charCfg = CONFIG.CHARACTERS.find(c => c.id === this.selectedCharId);
+    if (charCfg?.perk?.damageMul) {
+      damage *= charCfg.perk.damageMul;
+    }
+
+    // 寵物加成
+    if (this.pet?.config?.buff?.damageMul) {
+      damage *= this.pet.config.buff.damageMul;
+    }
+
+    // 暴擊檢定
+    if (this.pet?.config?.buff?.critChance && Math.random() < this.pet.config.buff.critChance) {
+      damage *= 2;
+    }
+
     const bullet = new Bullet(fromTower.x, fromTower.y, target, damage, CONFIG.BULLET.SPEED);
     this.bullets.push(bullet);
     this.player.triggerAttack();
     this.audioSystem.playShoot();
   }
 
-  /**
-   * 檢查當前波次是否結束
-   */
   checkWaveEnd() {
     if (this.waveActive && this.spawnQueue <= 0 && this.enemies.every(e => e.dead)) {
       this.waveActive = false;
       this.enemies = [];
-      this.player.wave += 1;
-      this.player.addGold(CONFIG.PLAYER.WAVE_CLEAR_REWARD);
-      this.audioSystem.playVictory();
-      this.hud.setStartWaveDisabled(false);
+
+      // 檢查是否通關當前關卡
+      if (this.player.wave >= this.currentLevel.waves) {
+        this.handleLevelVictory();
+      } else {
+        this.player.wave += 1;
+
+        let clearReward = CONFIG.PLAYER.WAVE_CLEAR_REWARD;
+        const charCfg = CONFIG.CHARACTERS.find(c => c.id === this.selectedCharId);
+        if (charCfg?.perk?.goldBonusMul) {
+          clearReward = Math.round(clearReward * charCfg.perk.goldBonusMul);
+        }
+
+        this.player.addGold(clearReward);
+        this.audioSystem.playVictory();
+        this.hud.setStartWaveDisabled(false);
+      }
     }
   }
 
-  /**
-   * 結束遊戲
-   */
+  handleLevelVictory() {
+    this.gameOver = true;
+    this.audioSystem.playVictory();
+
+    let newPetMsg = '';
+    const nextLevelId = this.currentLevelId + 1;
+
+    // 解鎖新關卡存檔
+    if (this.currentLevelId >= this.unlockedLevelMax && nextLevelId <= CONFIG.LEVELS.length) {
+      this.unlockedLevelMax = nextLevelId;
+      localStorage.setItem('mini_td_unlocked_level', this.unlockedLevelMax.toString());
+
+      // 檢查是否達成每 3 關解鎖新寵物條件
+      const unlockedPet = CONFIG.PETS.find(p => p.unlockLevel === this.currentLevelId);
+      if (unlockedPet) {
+        newPetMsg = `獲得新神寵【${unlockedPet.name}】！可前往「獲得寵物」裝備！`;
+      }
+    }
+
+    const hasNext = nextLevelId <= CONFIG.LEVELS.length;
+    this.hud.showOverlay(true, this.player.wave, this.player.kills, hasNext, newPetMsg);
+  }
+
   endGame(win) {
     this.gameOver = true;
     if (win) {
@@ -307,27 +441,33 @@ export class Game {
     } else {
       this.audioSystem.playGameOver();
     }
-    this.hud.showOverlay(win, this.player.wave, this.player.kills);
+    this.hud.showOverlay(false, this.player.wave, this.player.kills);
   }
 
-  /**
-   * 重新開始遊戲
-   */
-  resetGame() {
-    this.setupInitialState();
-    this.hud.update(this.getHUDState());
+  updateHUD() {
+    const charCfg = CONFIG.CHARACTERS.find(c => c.id === this.selectedCharId) || CONFIG.CHARACTERS[0];
+    this.hud.updateHUD({
+      wave: this.player.wave,
+      maxWaves: this.currentLevel.waves,
+      gold: this.player.gold,
+      lives: this.player.lives,
+      kills: this.player.kills,
+      selectedTower: this.player.selectedTower,
+      towerCount: this.towers.length,
+      currentLevel: this.currentLevel,
+      charName: charCfg.name
+    });
   }
 
-  /**
-   * 邏輯更新 (Tick)
-   */
   update(dt, now) {
-    if (this.gameOver) return;
+    if (this.gameState !== 'PLAYING' || this.gameOver) return;
 
-    // 更新玩家動畫計時
     this.player.update(dt);
+    if (this.pet) {
+      this.pet.update(dt, this.player.x, this.player.y);
+    }
 
-    // 波次敵人生產節奏
+    // 波次敵人生產
     if (this.waveActive) {
       this.spawnTimer -= dt;
       if (this.spawnTimer <= 0 && this.spawnQueue > 0) {
@@ -340,7 +480,7 @@ export class Game {
     // 敵人移動
     for (const e of this.enemies) {
       if (!e.dead) {
-        e.update(dt, CONFIG.PATH, (deadEnemy) => {
+        e.update(dt, this.currentLevel.path, (deadEnemy) => {
           const isDead = this.player.takeDamage(1);
           if (isDead) {
             this.endGame(false);
@@ -351,12 +491,17 @@ export class Game {
 
     // 砲塔瞄準與開火
     for (const t of this.towers) {
+      // 角色與寵物射速射程加成
+      const charCfg = CONFIG.CHARACTERS.find(c => c.id === this.selectedCharId);
+      const fireRateMul = (charCfg?.perk?.fireRateMul || 1.0) * (this.pet?.config?.buff?.fireRateMul || 1.0);
+      const effectiveFireRate = t.fireRate * fireRateMul;
+
       t.update(dt, now, this.enemies, (tower, target, damage) => {
         this.fireBullet(tower, target, damage);
       });
     }
 
-    // 子彈移動與命中結算
+    // 子彈移動與命中
     for (const b of this.bullets) {
       if (!b.dead) {
         b.update(dt, (bullet, target, damage) => {
@@ -366,7 +511,11 @@ export class Game {
             this.audioSystem.playHit();
           } else if (!target.dead) {
             target.dead = true;
-            this.player.addGold(target.reward);
+            let reward = target.reward;
+            if (this.pet?.config?.buff?.extraKillGold) {
+              reward += this.pet.config.buff.extraKillGold;
+            }
+            this.player.addGold(reward);
             this.player.addKill();
             this.particleSystem.spawnExplosion(target.x, target.y);
             this.audioSystem.playExplosion();
@@ -376,57 +525,17 @@ export class Game {
     }
     this.bullets = this.bullets.filter(b => !b.dead);
 
-    // 粒子系統更新
     this.particleSystem.update(dt);
-
-    // 波次結算與 HUD 更新
     this.checkWaveEnd();
-    this.hud.update(this.getHUDState());
+    this.updateHUD();
   }
 
-  /**
-   * 繪製防守路徑（若已有背景圖則僅繪製精細導引光點，未載入時繪製備用路徑）
-   */
-  drawPath(hasBgImage = false) {
-    const ctx = this.ctx;
-    const path = CONFIG.PATH;
-
-    if (!hasBgImage) {
-      // 備用底層路基
-      ctx.strokeStyle = '#1e293b';
-      ctx.lineWidth = 36;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.beginPath();
-      ctx.moveTo(path[0].x, path[0].y);
-      for (let i = 1; i < path.length; i++) {
-        ctx.lineTo(path[i].x, path[i].y);
-      }
-      ctx.stroke();
-    }
-
-    // 中央微光科技導引線
-    ctx.strokeStyle = 'rgba(79, 209, 197, 0.4)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6, 8]);
-    ctx.beginPath();
-    ctx.moveTo(path[0].x, path[0].y);
-    for (let i = 1; i < path.length; i++) {
-      ctx.lineTo(path[i].x, path[i].y);
-    }
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
-
-  /**
-   * 繪製建造中的砲塔放置預覽光圈
-   */
   drawPlacementPreview(mx, my) {
     if (!this.player.placingMode || mx === null || my === null) return;
 
     const valid = Physics.isValidPlacement(
       mx, my,
-      CONFIG.PATH,
+      this.currentLevel.path,
       this.towers,
       CONFIG.PATH_CLEARANCE,
       CONFIG.TOWER.MIN_GAP,
@@ -447,44 +556,33 @@ export class Game {
     ctx.stroke();
   }
 
-  /**
-   * 繪製製作人浮水印標籤
-   */
-  drawProducerWatermark() {
-    const ctx = this.ctx;
-    ctx.save();
-    ctx.font = 'bold 12px sans-serif';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'bottom';
-    ctx.fillText('製作人：11311385', 12, this.height - 10);
-    ctx.restore();
-  }
-
-  /**
-   * 畫面渲染 (Render)
-   */
   render(now) {
+    if (this.gameState !== 'PLAYING') return;
+
     this.ctx.clearRect(0, 0, this.width, this.height);
 
-    // 1. 繪製由 Road_test.png 組成的背景地圖
-    const bgImg = this.assetManager.getImage('background');
-    const hasBg = !!bgImg;
-    if (hasBg) {
+    // 1. 繪製當前關卡背景圖
+    const bgKey = `bg_level_${this.currentLevelId}`;
+    const bgImg = this.assetManager.getImage(bgKey) || this.assetManager.getImage('bg_level_1');
+    if (bgImg) {
       this.ctx.drawImage(bgImg, 0, 0, this.width, this.height);
     } else {
       this.ctx.fillStyle = CONFIG.COLORS.BG;
       this.ctx.fillRect(0, 0, this.width, this.height);
     }
 
-    // 2. 繪製路徑導引線
-    this.drawPath(hasBg);
-
-    // 3. 繪製基地防線指揮官 (Player Entity - drawImage 動態精靈切分播放)
-    const playerImg = this.assetManager.getImage('player');
+    // 2. 繪製指揮官角色 (6 大角色切換)
+    const charCfg = CONFIG.CHARACTERS.find(c => c.id === this.selectedCharId) || CONFIG.CHARACTERS[0];
+    const playerImg = this.assetManager.getImage(charCfg.assetKey);
     this.player.render(this.ctx, playerImg);
 
-    // 4. 繪製防禦砲塔
+    // 3. 繪製上陣寵物
+    if (this.pet) {
+      const petSheet = this.assetManager.getImage('pet_sheet');
+      this.pet.render(this.ctx, petSheet);
+    }
+
+    // 4. 繪製防禦砲塔 (WarSpriteSheet 戰車)
     const towerImg = this.assetManager.getImage('tower');
     for (const t of this.towers) {
       t.render(this.ctx, t === this.player.selectedTower, towerImg);
@@ -495,9 +593,9 @@ export class Game {
       b.render(this.ctx);
     }
 
-    // 6. 繪製行進中的敵人 (Enemy Entity - drawImage 動態精靈切分播放與鏡像翻轉)
-    const enemyImg = this.assetManager.getImage('enemy');
+    // 6. 繪製敵人 (每 3 波更換魔物外觀)
     for (const e of this.enemies) {
+      const enemyImg = this.assetManager.getImage(e.assetKey);
       e.render(this.ctx, enemyImg, now);
     }
 
@@ -508,8 +606,5 @@ export class Game {
     // 8. 繪製建造模式的預覽游標
     const mousePos = this.inputHandler.getMousePos();
     this.drawPlacementPreview(mousePos.x, mousePos.y);
-
-    // 9. 繪製製作人標記
-    this.drawProducerWatermark();
   }
 }

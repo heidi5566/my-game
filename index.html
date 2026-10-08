@@ -8,49 +8,116 @@
 </head>
 <body>
   <div id="wrap">
-    <div id="topBar">
-      <h1>🏰 極簡塔防</h1>
-      <div id="audioControls">
-        <button id="soundToggleBtn" class="ghost mini-btn" title="切換音效">🔊 音效開</button>
-        <button id="musicToggleBtn" class="ghost mini-btn" title="切換音樂">🎵 音樂開</button>
+    
+    <!-- 主畫面 (Main Menu) -->
+    <div id="mainMenu" class="screen-view active">
+      <div class="menu-hero">
+        <h1 class="game-title">🏰 極簡塔防</h1>
+        <div class="game-subtitle">Mini Tower Defense</div>
+        <p class="menu-desc">部署戰車防線，指揮強力英雄與傳奇神寵，抵禦魔物大軍侵襲！</p>
+      </div>
+
+      <div class="menu-buttons">
+        <button id="menuLevelBtn" class="menu-btn primary-btn">🎮 選擇關卡</button>
+        <button id="menuCharBtn" class="menu-btn secondary-btn">👤 選擇角色</button>
+        <button id="menuPetBtn" class="menu-btn pet-btn">🐾 獲得寵物</button>
+      </div>
+
+      <div id="menuStats" class="menu-stats-card">
+        <div>當前解鎖關卡：<b id="statsUnlockedLevel">第 1 關</b></div>
+        <div>已裝備角色：<b id="statsCurrentChar">貓咪氣功大師</b></div>
+        <div>已上陣寵物：<b id="statsCurrentPet">無</b></div>
       </div>
     </div>
-    <div id="sub">敵人是會爆炸的炸彈兵，沿路徑前進。砲塔會自動旋轉瞄準並開火，血量歸零即引爆！</div>
-    
-    <div id="hud">
-      <span>波次 <b id="waveDisplay">1</b></span>
-      <span>金幣 <b id="goldDisplay">50</b></span>
-      <span class="lives">生命 <b id="livesDisplay">10</b></span>
-      <span>擊殺 <b id="killDisplay">0</b></span>
-      <span class="producer-tag">製作人：<b>11311385</b></span>
-    </div>
 
-    <div id="canvasContainer">
-      <canvas id="game" width="640" height="420"></canvas>
-      <div id="loadingOverlay">
-        <div class="spinner"></div>
-        <div id="loadingText">資源載入中... 0%</div>
+    <!-- 戰鬥畫面 (Game Screen) -->
+    <div id="gameScreen" class="screen-view">
+      <div id="topBar">
+        <div class="top-left-controls">
+          <button id="backToMenuBtn" class="ghost mini-btn">⬅ 返回主選單</button>
+          <span id="currentLevelBadge" class="level-badge">第 1 關</span>
+        </div>
+        <div id="audioControls">
+          <button id="soundToggleBtn" class="ghost mini-btn" title="切換音效">🔊 音效開</button>
+          <button id="musicToggleBtn" class="ghost mini-btn" title="切換音樂">🎵 音樂開</button>
+        </div>
       </div>
-    </div>
-    
-    <div id="placeMsg"></div>
-    
-    <div id="controls">
-      <button id="startWaveBtn">開始波次</button>
-      <button id="placeTowerBtn" class="secondary">放置新砲塔 (40金)</button>
-      <button id="upgradeBtn">升級選中砲塔 (20金)</button>
-      <button id="restartBtn">重新開始</button>
-      <button id="soundBtn" class="ghost">🔊 音效開</button>
-      <button id="musicBtn" class="ghost">🎵 音樂開</button>
+      
+      <div id="hud">
+        <span>波次 <b id="waveDisplay">1</b>/<span id="maxWaveDisplay">5</span></span>
+        <span>金幣 <b id="goldDisplay">60</b></span>
+        <span class="lives">生命 <b id="livesDisplay">10</b></span>
+        <span>擊殺 <b id="killDisplay">0</b></span>
+        <span class="char-hud">指揮官：<b id="charHudName">貓咪大師</b></span>
+      </div>
+
+      <div id="canvasContainer">
+        <canvas id="game" width="640" height="420"></canvas>
+        <div id="loadingOverlay">
+          <div class="spinner"></div>
+          <div id="loadingText">資源載入中... 0%</div>
+        </div>
+      </div>
+      
+      <div id="placeMsg"></div>
+      
+      <div id="controls">
+        <button id="startWaveBtn">開始波次</button>
+        <button id="placeTowerBtn" class="secondary">放置新砲塔 (40金)</button>
+        <button id="upgradeBtn">升級選中砲塔 (20金)</button>
+        <button id="restartBtn">本關重新開始</button>
+        <button id="soundBtn" class="ghost">🔊 音效開</button>
+        <button id="musicBtn" class="ghost">🎵 音樂開</button>
+      </div>
+
+      <div class="hint">點擊場上砲塔可選中升級；點擊「放置新砲塔」再點空地即可自選部署（每關路線不同，請靈活擺位！）</div>
     </div>
 
-    <div class="hint">最多可部署 3 座砲塔（含初始塔）；點擊場上砲塔可選中它（黃圈標示），選中後可升級；點擊「放置新砲塔」再點空地即可自選位置增設</div>
   </div>
 
+  <!-- 關卡選擇彈窗 (Level Select Modal) -->
+  <div id="levelModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🗺️ 選擇關卡</h2>
+        <button class="close-btn" id="closeLevelModal">✕</button>
+      </div>
+      <div id="levelGrid" class="level-grid"></div>
+    </div>
+  </div>
+
+  <!-- 角色選擇彈窗 (Character Select Modal) -->
+  <div id="charModal" class="modal-overlay">
+    <div class="modal-content large-modal">
+      <div class="modal-header">
+        <h2>👤 選擇角色</h2>
+        <button class="close-btn" id="closeCharModal">✕</button>
+      </div>
+      <div id="charGrid" class="char-grid"></div>
+    </div>
+  </div>
+
+  <!-- 寵物系統彈窗 (Pet Collection Modal) -->
+  <div id="petModal" class="modal-overlay">
+    <div class="modal-content large-modal">
+      <div class="modal-header">
+        <h2>🐾 獲得與裝備寵物</h2>
+        <button class="close-btn" id="closePetModal">✕</button>
+      </div>
+      <div class="pet-intro-tip">每通關 3 個關卡即可解鎖 1 隻神寵，獲得全隊屬性光環！</div>
+      <div id="petGrid" class="pet-grid"></div>
+    </div>
+  </div>
+
+  <!-- 結算彈窗 (Game Over / Victory) -->
   <div id="overlay">
     <h2 id="overTitle">遊戲結束</h2>
-    <p id="overText">你的基地被攻破了！</p>
-    <button id="overRestart">再玩一次</button>
+    <p id="overText">基地被攻破了！</p>
+    <div class="overlay-btn-group">
+      <button id="overNextLevel" class="primary-btn" style="display: none;">進入下一關 ➔</button>
+      <button id="overRestart" class="secondary">再玩一次</button>
+      <button id="overMenuBtn" class="ghost">返回主選單</button>
+    </div>
   </div>
 
   <script type="module" src="js/main.js"></script>
