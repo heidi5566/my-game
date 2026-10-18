@@ -460,6 +460,11 @@ export const CONFIG = {
     MAX_COUNT: 4,
     NEW_COST: 40,
     UPGRADE_COST: 20,
+    getUpgradeCost: (level = 1) => {
+      if (level >= 7) return 30;
+      if (level >= 5) return 25;
+      return 20;
+    },
     MIN_GAP: 55,
     DEFAULT_RANGE: 135,
     DEFAULT_DAMAGE: 14,

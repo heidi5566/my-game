@@ -359,7 +359,16 @@ export class HUD {
     }
 
     if (this.upgradeBtn) {
-      this.upgradeBtn.disabled = !selectedTower || gold < CONFIG.TOWER.UPGRADE_COST;
+      if (!selectedTower) {
+        this.upgradeBtn.disabled = true;
+        this.upgradeBtn.textContent = '升級選中砲塔 (20金)';
+      } else {
+        const cost = selectedTower.getUpgradeCost
+          ? selectedTower.getUpgradeCost()
+          : (selectedTower.level >= 7 ? 30 : (selectedTower.level >= 5 ? 25 : 20));
+        this.upgradeBtn.disabled = gold < cost;
+        this.upgradeBtn.textContent = `升級選中砲塔 (${cost}金)`;
+      }
     }
 
     if (this.placeTowerBtn) {

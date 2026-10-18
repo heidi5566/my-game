@@ -442,11 +442,16 @@ export class Game {
 
   upgradeSelectedTower() {
     this.audioSystem.ensureAudio();
-    if (this.player.selectedTower && this.player.canAfford(CONFIG.TOWER.UPGRADE_COST)) {
-      this.player.spendGold(CONFIG.TOWER.UPGRADE_COST);
+    if (!this.player.selectedTower) return;
+    const cost = this.player.selectedTower.getUpgradeCost();
+    if (this.player.canAfford(cost)) {
+      this.player.spendGold(cost);
       this.player.selectedTower.upgrade();
       this.audioSystem.playUpgrade();
+      this.hud.showMessage(`砲塔已升級至 Lv.${this.player.selectedTower.level}！`, 1500);
       this.updateHUD();
+    } else {
+      this.hud.showMessage(`金幣不足，升級需 ${cost} 金幣！`, 2000);
     }
   }
 

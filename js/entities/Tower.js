@@ -30,6 +30,16 @@ export class Tower extends Entity {
   }
 
   /**
+   * 取得升級此砲塔所需金幣
+   * 規則：5級以上需25金幣，7級以上需30金幣，其餘為20金幣
+   */
+  getUpgradeCost() {
+    if (this.level >= 7) return 30;
+    if (this.level >= 5) return 25;
+    return CONFIG.TOWER.UPGRADE_COST;
+  }
+
+  /**
    * 升級砲塔
    */
   upgrade() {
