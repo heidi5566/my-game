@@ -45,6 +45,7 @@ export class HUD {
     this.musicBtn = document.getElementById('musicBtn');
     this.soundToggleBtn = document.getElementById('soundToggleBtn');
     this.musicToggleBtn = document.getElementById('musicToggleBtn');
+    this.speedBtn = document.getElementById('speedBtn');
     this.placeMsg = document.getElementById('placeMsg');
 
     // 結算彈窗
@@ -52,6 +53,8 @@ export class HUD {
     this.overTitle = document.getElementById('overTitle');
     this.overText = document.getElementById('overText');
     this.overNextLevel = document.getElementById('overNextLevel');
+    this.overChangeChar = document.getElementById('overChangeChar');
+    this.overChangePet = document.getElementById('overChangePet');
     this.overRestart = document.getElementById('overRestart');
     this.overMenuBtn = document.getElementById('overMenuBtn');
 
@@ -216,7 +219,10 @@ export class HUD {
     onRestart,
     onNextLevel,
     onToggleSound,
-    onToggleMusic
+    onToggleMusic,
+    onToggleSpeed,
+    onChangeCharInOverlay,
+    onChangePetInOverlay
   }) {
     if (this.menuLevelBtn && onOpenLevelModal) {
       this.menuLevelBtn.addEventListener('click', onOpenLevelModal);
@@ -240,6 +246,9 @@ export class HUD {
     if (this.startWaveBtn && onStartWave) {
       this.startWaveBtn.addEventListener('click', onStartWave);
     }
+    if (this.speedBtn && onToggleSpeed) {
+      this.speedBtn.addEventListener('click', onToggleSpeed);
+    }
     if (this.placeTowerBtn && onTogglePlace) {
       this.placeTowerBtn.addEventListener('click', onTogglePlace);
     }
@@ -261,6 +270,12 @@ export class HUD {
         onNextLevel();
       });
     }
+    if (this.overChangeChar && onChangeCharInOverlay) {
+      this.overChangeChar.addEventListener('click', onChangeCharInOverlay);
+    }
+    if (this.overChangePet && onChangePetInOverlay) {
+      this.overChangePet.addEventListener('click', onChangePetInOverlay);
+    }
 
     // 音訊開關
     if (onToggleSound) {
@@ -270,6 +285,26 @@ export class HUD {
     if (onToggleMusic) {
       if (this.musicBtn) this.musicBtn.addEventListener('click', onToggleMusic);
       if (this.musicToggleBtn) this.musicToggleBtn.addEventListener('click', onToggleMusic);
+    }
+  }
+
+  /**
+   * 設定遊戲倍速按鈕外觀狀態
+   */
+  setSpeedState(speed) {
+    if (!this.speedBtn) return;
+    if (speed >= 2.0) {
+      this.speedBtn.textContent = '⚡ 速度 2.0x (已達極速)';
+      this.speedBtn.className = 'accent-btn maxed';
+      this.speedBtn.disabled = true;
+    } else if (speed >= 1.5) {
+      this.speedBtn.textContent = '⏩ 速度 1.5x (升級 2.0x 需50金)';
+      this.speedBtn.className = 'accent-btn';
+      this.speedBtn.disabled = false;
+    } else {
+      this.speedBtn.textContent = '⏩ 速度 1.0x (升級 1.5x 需40金)';
+      this.speedBtn.className = 'accent-btn';
+      this.speedBtn.disabled = false;
     }
   }
 

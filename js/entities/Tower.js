@@ -49,7 +49,10 @@ export class Tower extends Entity {
   /**
    * 更新砲塔瞄準與開火
    */
-  update(dt, now, enemies, onFire) {
+  update(dt, now, enemies, onFire, customRange = null, customFireRate = null) {
+    const range = customRange !== null ? customRange : this.range;
+    const fireRate = customFireRate !== null ? customFireRate : this.fireRate;
+
     // 衰減後座力
     if (this.recoil > 0) {
       this.recoil = Math.max(0, this.recoil - dt * 15);
@@ -62,7 +65,7 @@ export class Tower extends Entity {
     for (const e of enemies) {
       if (e.dead) continue;
       const d = Physics.pointDist(e.x, e.y, this.x, this.y);
-      if (d <= this.range && e.seg > bestSeg) {
+      if (d <= range && e.seg > bestSeg) {
         bestSeg = e.seg;
         best = e;
       }
@@ -72,7 +75,7 @@ export class Tower extends Entity {
       const desired = Math.atan2(best.y - this.y, best.x - this.x);
       this.angle += Physics.normalizeAngle(desired - this.angle) * Math.min(1, dt * 8);
 
-      if (now - this.lastShot >= this.fireRate) {
+      if (now - this.lastShot >= fireRate) {
         this.lastShot = now;
         this.recoil = 6;
         if (onFire) {

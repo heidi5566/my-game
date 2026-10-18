@@ -49,6 +49,7 @@ export class Game {
 
     // 遊戲狀態與波次
     this.gameState = 'MENU'; // 'MENU' | 'PLAYING'
+    this.gameSpeed = 1.0;
     this.waveActive = false;
     this.spawnQueue = 0;
     this.spawnTimer = 0;
@@ -76,6 +77,12 @@ export class Game {
         bg_level_4: './assets/images/bg_level_4.png',
         bg_level_5: './assets/images/bg_level_5.png',
         bg_level_6: './assets/images/bg_level_6.png',
+        bg_level_7: './assets/images/bg_level_7.png',
+        bg_level_8: './assets/images/bg_level_8.png',
+        bg_level_9: './assets/images/bg_level_9.png',
+        bg_level_10: './assets/images/bg_level_10.png',
+        bg_level_11: './assets/images/bg_level_11.png',
+        bg_level_12: './assets/images/bg_level_12.png',
         char_cat: './assets/images/char_cat.png',
         char_platina: './assets/images/char_platina.png',
         char_knight: './assets/images/char_knight.png',
@@ -90,6 +97,12 @@ export class Game {
         enemy_skull: './assets/images/enemy_skull.png',
         enemy_spiky: './assets/images/enemy_spiky.png',
         enemy_goblin: './assets/images/enemy_goblin.png',
+        enemy_orc: './assets/images/enemy_orc.png',
+        enemy_spaceman: './assets/images/enemy_spaceman.png',
+        enemy_plant: './assets/images/enemy_plant.png',
+        enemy_gremlin: './assets/images/enemy_gremlin.png',
+        enemy_monk: './assets/images/enemy_monk.png',
+        enemy_mech: './assets/images/enemy_mech.png',
         pet_sheet: './assets/images/pet_sheet.png',
         tower: './assets/images/tower.png',
         effects: './assets/images/effects.png'
@@ -161,7 +174,10 @@ export class Game {
     this.hud.renderCharGrid(this.selectedCharId, (charId) => {
       this.selectedCharId = charId;
       localStorage.setItem('mini_td_selected_char', charId);
+      const charCfg = CONFIG.CHARACTERS.find(c => c.id === charId) || CONFIG.CHARACTERS[0];
+      this.player.characterId = charId;
       this.refreshMenuDisplay();
+      this.updateHUD();
     });
 
     this.hud.renderPetGrid(this.unlockedLevelMax, this.selectedPetId, (petId) => {
@@ -173,6 +189,7 @@ export class Game {
       }
       this.setupPet();
       this.refreshMenuDisplay();
+      this.updateHUD();
     });
   }
 
@@ -206,6 +223,8 @@ export class Game {
     this.enemies = [];
     this.bullets = [];
     this.particleSystem.clear();
+    this.gameSpeed = 1.0;
+    this.hud.setSpeedState(this.gameSpeed);
     this.waveActive = false;
     this.spawnQueue = 0;
     this.spawnTimer = 0;
@@ -219,6 +238,41 @@ export class Game {
     this.hud.setStartWaveDisabled(false);
     this.hud.hideOverlay();
     this.updateHUD();
+  }
+
+  /**
+   * 升級遊戲行進倍速 (1.0x -> 1.5x (40金) -> 2.0x (50金))
+   */
+  upgradeSpeed() {
+    this.audioSystem.ensureAudio();
+    if (this.gameSpeed >= 2.0) {
+      this.hud.showMessage('已達到最高倍速 (2.0x)！', 1800);
+      return;
+    }
+
+    if (this.gameSpeed < 1.5) {
+      if (!this.player.canAfford(40)) {
+        this.hud.showMessage('金幣不足，升級 1.5 倍速需 40 金幣！', 2000);
+        return;
+      }
+      this.player.spendGold(40);
+      this.gameSpeed = 1.5;
+      this.audioSystem.playUpgrade();
+      this.hud.setSpeedState(this.gameSpeed);
+      this.updateHUD();
+      this.hud.showMessage('⏩ 遊戲速度提升至 1.5 倍速！', 1800);
+    } else if (this.gameSpeed < 2.0) {
+      if (!this.player.canAfford(50)) {
+        this.hud.showMessage('金幣不足，升級 2.0 倍速需 50 金幣！', 2000);
+        return;
+      }
+      this.player.spendGold(50);
+      this.gameSpeed = 2.0;
+      this.audioSystem.playUpgrade();
+      this.hud.setSpeedState(this.gameSpeed);
+      this.updateHUD();
+      this.hud.showMessage('⚡⚡ 遊戲速度提升至 2.0 倍極速！', 1800);
+    }
   }
 
   /**
@@ -270,6 +324,15 @@ export class Game {
       onToggleMusic: () => {
         const musicOn = this.audioSystem.toggleMusic();
         this.hud.setMusicState(musicOn);
+      },
+      onToggleSpeed: () => this.upgradeSpeed(),
+      onChangeCharInOverlay: () => {
+        this.refreshMenuDisplay();
+        this.hud.openModal(this.hud.charModal);
+      },
+      onChangePetInOverlay: () => {
+        this.refreshMenuDisplay();
+        this.hud.openModal(this.hud.petModal);
       }
     });
 
@@ -381,11 +444,19 @@ export class Game {
     }
 
     // 暴擊檢定
-    if (this.pet?.config?.buff?.critChance && Math.random() < this.pet.config.buff.critChance) {
+    let totalCrit = 0;
+    if (this.pet?.config?.buff?.critChance) {
+      totalCrit += this.pet.config.buff.critChance;
+    }
+    if (charCfg?.perk?.critChance) {
+      totalCrit += charCfg.perk.critChance;
+    }
+    if (totalCrit > 0 && Math.random() < totalCrit) {
       damage *= 2;
     }
 
-    const bullet = new Bullet(fromTower.x, fromTower.y, target, damage, CONFIG.BULLET.SPEED);
+    const bulletSpeed = CONFIG.BULLET.SPEED * (charCfg?.perk?.bulletSpeedMul || 1.0);
+    const bullet = new Bullet(fromTower.x, fromTower.y, target, damage, bulletSpeed);
     this.bullets.push(bullet);
     this.player.triggerAttack();
     this.audioSystem.playShoot();
@@ -406,6 +477,10 @@ export class Game {
         const charCfg = CONFIG.CHARACTERS.find(c => c.id === this.selectedCharId);
         if (charCfg?.perk?.goldBonusMul) {
           clearReward = Math.round(clearReward * charCfg.perk.goldBonusMul);
+        }
+        if (charCfg?.perk?.waveHeal) {
+          const maxLives = CONFIG.PLAYER.INITIAL_LIVES + (charCfg?.perk?.bonusLives || 0);
+          this.player.lives = Math.min(this.player.lives + charCfg.perk.waveHeal, maxLives);
         }
 
         this.player.addGold(clearReward);
@@ -466,14 +541,17 @@ export class Game {
   update(dt, now) {
     if (this.gameState !== 'PLAYING' || this.gameOver) return;
 
-    this.player.update(dt);
+    // 支援倍速升級系統 (1.0x / 1.5x / 2.0x)
+    const simDt = dt * this.gameSpeed;
+
+    this.player.update(simDt);
     if (this.pet) {
-      this.pet.update(dt, this.player.x, this.player.y);
+      this.pet.update(simDt, this.player.x, this.player.y);
     }
 
     // 波次敵人生產
     if (this.waveActive) {
-      this.spawnTimer -= dt;
+      this.spawnTimer -= simDt;
       if (this.spawnTimer <= 0 && this.spawnQueue > 0) {
         this.spawnEnemy();
         this.spawnQueue -= 1;
@@ -484,7 +562,7 @@ export class Game {
     // 敵人移動
     for (const e of this.enemies) {
       if (!e.dead) {
-        e.update(dt, this.currentLevel.path, (deadEnemy) => {
+        e.update(simDt, this.currentLevel.path, (deadEnemy) => {
           const isDead = this.player.takeDamage(1);
           if (isDead) {
             this.endGame(false);
@@ -498,17 +576,19 @@ export class Game {
       // 角色與寵物射速射程加成
       const charCfg = CONFIG.CHARACTERS.find(c => c.id === this.selectedCharId);
       const fireRateMul = (charCfg?.perk?.fireRateMul || 1.0) * (this.pet?.config?.buff?.fireRateMul || 1.0);
+      const rangeMul = (charCfg?.perk?.rangeMul || 1.0) * (this.pet?.config?.buff?.rangeMul || 1.0);
       const effectiveFireRate = t.fireRate * fireRateMul;
+      const effectiveRange = t.range * rangeMul;
 
-      t.update(dt, now, this.enemies, (tower, target, damage) => {
+      t.update(simDt, now, this.enemies, (tower, target, damage) => {
         this.fireBullet(tower, target, damage);
-      });
+      }, effectiveRange, effectiveFireRate);
     }
 
     // 子彈移動與命中
     for (const b of this.bullets) {
       if (!b.dead) {
-        b.update(dt, (bullet, target, damage) => {
+        b.update(simDt, (bullet, target, damage) => {
           const currentHp = target.takeDamage(damage);
           if (currentHp > 0) {
             this.particleSystem.spawnHit(target.x, target.y);
@@ -518,6 +598,10 @@ export class Game {
             let reward = target.reward;
             if (this.pet?.config?.buff?.extraKillGold) {
               reward += this.pet.config.buff.extraKillGold;
+            }
+            const charCfg = CONFIG.CHARACTERS.find(c => c.id === this.selectedCharId);
+            if (charCfg?.perk?.extraKillGold) {
+              reward += charCfg.perk.extraKillGold;
             }
             this.player.addGold(reward);
             this.player.addKill();
@@ -529,7 +613,7 @@ export class Game {
     }
     this.bullets = this.bullets.filter(b => !b.dead);
 
-    this.particleSystem.update(dt);
+    this.particleSystem.update(simDt);
     this.checkWaveEnd();
     this.updateHUD();
   }

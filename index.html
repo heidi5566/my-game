@@ -65,6 +65,7 @@
       
       <div id="controls">
         <button id="startWaveBtn">開始波次</button>
+        <button id="speedBtn" class="accent-btn" title="升級遊戲速度">⏩ 速度 1.0x (升級 1.5x 需40金)</button>
         <button id="placeTowerBtn" class="secondary">放置新砲塔 (40金)</button>
         <button id="upgradeBtn">升級選中砲塔 (20金)</button>
         <button id="restartBtn">本關重新開始</button>
@@ -106,7 +107,7 @@
         <h2>🐾 獲得與裝備寵物</h2>
         <button class="close-btn" id="closePetModal">✕</button>
       </div>
-      <div class="pet-intro-tip">每通關 3 個關卡即可解鎖 1 隻神寵，獲得全隊屬性光環！</div>
+      <div class="pet-intro-tip">每通關 2 個關卡即可解鎖 1 隻神寵，獲得全隊屬性光環！</div>
       <div id="petGrid" class="pet-grid"></div>
     </div>
   </div>
@@ -117,6 +118,8 @@
     <p id="overText">基地被攻破了！</p>
     <div class="overlay-btn-group">
       <button id="overNextLevel" class="primary-btn" style="display: none;">進入下一關 ➔</button>
+      <button id="overChangeChar" class="secondary">更換角色</button>
+      <button id="overChangePet" class="secondary">更換寵物</button>
       <button id="overRestart" class="secondary">再玩一次</button>
       <button id="overMenuBtn" class="ghost">返回主選單</button>
     </div>

@@ -282,6 +282,21 @@ button.secondary {
   background: var(--accent2);
 }
 
+button.accent-btn {
+  background: #38b2ac;
+  color: #0f1720;
+}
+
+button.accent-btn:hover {
+  background: #4fd1c5;
+}
+
+button.accent-btn.maxed {
+  background: #4a5568;
+  color: #cbd5e0;
+  cursor: default;
+}
+
 button.ghost {
   background: #334455;
   color: var(--text);

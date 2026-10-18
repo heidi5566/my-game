@@ -7,10 +7,15 @@ import { SpriteRenderer } from '../systems/SpriteRenderer.js';
 export class Pet {
   constructor(petConfig, commanderX, commanderY) {
     this.config = petConfig;
-    this.x = commanderX - 26;
-    this.y = commanderY + 12;
     this.floatTimer = 0;
     this.facingLeft = true;
+    this.updatePosition(commanderX, commanderY);
+  }
+
+  updatePosition(commanderX, commanderY) {
+    // 放置在指揮官左側並略微偏下，確保寵物本體與名稱標籤完全不會遮擋角色與角色名稱
+    this.x = commanderX - 50;
+    this.y = commanderY + 18;
   }
 
   /**
@@ -18,8 +23,8 @@ export class Pet {
    */
   update(dt, commanderX, commanderY) {
     this.floatTimer += dt * 4;
-    this.x = commanderX - 26;
-    this.y = commanderY + 12 + Math.sin(this.floatTimer) * 4;
+    this.x = commanderX - 50;
+    this.y = commanderY + 18 + Math.sin(this.floatTimer) * 4;
   }
 
   /**

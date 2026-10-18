@@ -91,18 +91,86 @@ const CHARACTER_FRAMES = {
   },
   bard: {
     idle: [
-      { sx: 0, sy: 0, sw: 32, sh: 32 },
-      { sx: 32, sy: 0, sw: 32, sh: 32 },
-      { sx: 64, sy: 0, sw: 32, sh: 32 }
+      { sx: 96, sy: 128, sw: 32, sh: 32 },
+      { sx: 128, sy: 128, sw: 32, sh: 32 },
+      { sx: 160, sy: 128, sw: 32, sh: 32 }
     ],
     attack: [
-      { sx: 0, sy: 32, sw: 32, sh: 32 },
-      { sx: 32, sy: 32, sw: 32, sh: 32 },
-      { sx: 64, sy: 32, sw: 32, sh: 32 }
+      { sx: 96, sy: 160, sw: 32, sh: 32 },
+      { sx: 128, sy: 160, sw: 32, sh: 32 },
+      { sx: 160, sy: 160, sw: 32, sh: 32 }
     ],
     hurt: [
-      { sx: 0, sy: 64, sw: 32, sh: 32 },
-      { sx: 32, sy: 64, sw: 32, sh: 32 }
+      { sx: 128, sy: 128, sw: 32, sh: 32 },
+      { sx: 96, sy: 128, sw: 32, sh: 32 }
+    ],
+    scale: 1.25
+  },
+  spring_goddess: {
+    idle: [
+      { sx: 96, sy: 0, sw: 32, sh: 32 },
+      { sx: 128, sy: 0, sw: 32, sh: 32 },
+      { sx: 160, sy: 0, sw: 32, sh: 32 }
+    ],
+    attack: [
+      { sx: 96, sy: 32, sw: 32, sh: 32 },
+      { sx: 128, sy: 32, sw: 32, sh: 32 },
+      { sx: 160, sy: 32, sw: 32, sh: 32 }
+    ],
+    hurt: [
+      { sx: 128, sy: 0, sw: 32, sh: 32 },
+      { sx: 96, sy: 0, sw: 32, sh: 32 }
+    ],
+    scale: 1.25
+  },
+  lake_goddess: {
+    idle: [
+      { sx: 288, sy: 0, sw: 32, sh: 32 },
+      { sx: 320, sy: 0, sw: 32, sh: 32 },
+      { sx: 352, sy: 0, sw: 32, sh: 32 }
+    ],
+    attack: [
+      { sx: 288, sy: 32, sw: 32, sh: 32 },
+      { sx: 320, sy: 32, sw: 32, sh: 32 },
+      { sx: 352, sy: 32, sw: 32, sh: 32 }
+    ],
+    hurt: [
+      { sx: 320, sy: 0, sw: 32, sh: 32 },
+      { sx: 288, sy: 0, sw: 32, sh: 32 }
+    ],
+    scale: 1.25
+  },
+  earth_goddess: {
+    idle: [
+      { sx: 288, sy: 128, sw: 32, sh: 32 },
+      { sx: 320, sy: 128, sw: 32, sh: 32 },
+      { sx: 352, sy: 128, sw: 32, sh: 32 }
+    ],
+    attack: [
+      { sx: 288, sy: 160, sw: 32, sh: 32 },
+      { sx: 320, sy: 160, sw: 32, sh: 32 },
+      { sx: 352, sy: 160, sw: 32, sh: 32 }
+    ],
+    hurt: [
+      { sx: 320, sy: 128, sw: 32, sh: 32 },
+      { sx: 288, sy: 128, sw: 32, sh: 32 }
+    ],
+    scale: 1.25
+  },
+  kungfu_boy: {
+    idle: [
+      { sx: 0, sy: 128, sw: 32, sh: 32 },
+      { sx: 32, sy: 128, sw: 32, sh: 32 },
+      { sx: 64, sy: 128, sw: 32, sh: 32 }
+    ],
+    attack: [
+      { sx: 0, sy: 160, sw: 32, sh: 32 },
+      { sx: 32, sy: 160, sw: 32, sh: 32 },
+      { sx: 64, sy: 160, sw: 32, sh: 32 }
+    ],
+    hurt: [
+      { sx: 32, sy: 128, sw: 32, sh: 32 },
+      { sx: 0, sy: 128, sw: 32, sh: 32 }
     ],
     scale: 1.25
   }

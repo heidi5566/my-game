@@ -6,7 +6,7 @@ export const CONFIG = {
   CANVAS_WIDTH: 640,
   CANVAS_HEIGHT: 420,
 
-  // 關卡配置清單 (Levels 1 to 6 - 一關一種專屬魔物)
+  // 關卡配置清單 (Levels 1 to 12 - 一關一種專屬魔物)
   LEVELS: [
     {
       id: 1,
@@ -47,7 +47,7 @@ export const CONFIG = {
     {
       id: 3,
       name: '第 3 關：迷宮重圍',
-      desc: '雙折曲折縱深防線。敵方魔物：【吐舌翼蝠怪】（過關解鎖神寵：蒼穹疾風鳥）',
+      desc: '雙折曲折縱深防線。敵方魔物：【吐舌翼蝠怪】',
       enemyType: 'mon3',
       waves: 6,
       path: [
@@ -67,7 +67,7 @@ export const CONFIG = {
     {
       id: 4,
       name: '第 4 關：幽魂深淵',
-      desc: '大外環迴旋線路。敵方魔物：【Skulli 幽魂魅影】（過關解鎖神寵：幻彩極光鳥）',
+      desc: '大外環迴旋線路。敵方魔物：【Skulli 幽魂魅影】（過關解鎖神寵：蒼穹疾風鳥）',
       enemyType: 'skulli',
       waves: 6,
       path: [
@@ -87,7 +87,7 @@ export const CONFIG = {
     {
       id: 5,
       name: '第 5 關：魔導突襲',
-      desc: '波浪蛇形突圍線。敵方魔物：【暗黑秘術魔導士】（過關解鎖神寵：未來光能鳥）',
+      desc: '波浪蛇形突圍線。敵方魔物：【暗黑秘術魔導士】',
       enemyType: 'mage',
       waves: 7,
       path: [
@@ -108,8 +108,8 @@ export const CONFIG = {
     },
     {
       id: 6,
-      name: '第 6 關：終極試煉',
-      desc: '螺旋迴轉大迷宮。敵方魔物：【尖刺大地岩獸】（通關解鎖終極神寵：暗夜幽影鳥！）',
+      name: '第 6 關：地岩試煉',
+      desc: '螺旋迴轉大迷宮。敵方魔物：【尖刺大地岩獸】（過關解鎖神寵：幻彩極光鳥）',
       enemyType: 'spiky',
       waves: 8,
       path: [
@@ -125,10 +125,134 @@ export const CONFIG = {
       initialTower: { x: 260, y: 260 },
       commanderPos: { x: 610, y: 260 },
       bgImage: './assets/images/bg_level_6.png'
+    },
+    {
+      id: 7,
+      name: '第 7 關：階梯重陣',
+      desc: '高低階梯突進防線。敵方魔物：【綠皮半獸人蠻兵】',
+      enemyType: 'orc',
+      waves: 6,
+      path: [
+        { x: -20, y: 340 },
+        { x: 150, y: 340 },
+        { x: 150, y: 240 },
+        { x: 300, y: 240 },
+        { x: 300, y: 140 },
+        { x: 460, y: 140 },
+        { x: 460, y: 60 },
+        { x: 660, y: 60 }
+      ],
+      initialTower: { x: 380, y: 200 },
+      commanderPos: { x: 610, y: 60 },
+      bgImage: './assets/images/bg_level_7.png'
+    },
+    {
+      id: 8,
+      name: '第 8 關：峽谷雙折',
+      desc: '深谷折返大迂迴。敵方魔物：【星際裝甲巡航兵】（過關解鎖神寵：未來光能鳥）',
+      enemyType: 'spaceman',
+      waves: 7,
+      path: [
+        { x: -20, y: 80 },
+        { x: 220, y: 80 },
+        { x: 220, y: 280 },
+        { x: 80, y: 280 },
+        { x: 80, y: 350 },
+        { x: 540, y: 350 },
+        { x: 540, y: 160 },
+        { x: 660, y: 160 }
+      ],
+      initialTower: { x: 360, y: 220 },
+      commanderPos: { x: 610, y: 160 },
+      bgImage: './assets/images/bg_level_8.png'
+    },
+    {
+      id: 9,
+      name: '第 9 關：毒沼迷徑',
+      desc: '劇毒沼澤曲折死鬥。敵方魔物：【食人黑妖魔花】',
+      enemyType: 'plant',
+      waves: 7,
+      path: [
+        { x: -20, y: 200 },
+        { x: 120, y: 200 },
+        { x: 120, y: 80 },
+        { x: 360, y: 80 },
+        { x: 360, y: 260 },
+        { x: 240, y: 260 },
+        { x: 240, y: 350 },
+        { x: 660, y: 350 }
+      ],
+      initialTower: { x: 250, y: 160 },
+      commanderPos: { x: 610, y: 350 },
+      bgImage: './assets/images/bg_level_9.png'
+    },
+    {
+      id: 10,
+      name: '第 10 關：鋸齒天險',
+      desc: '極限高低折角防線。敵方魔物：【幽冥小鬼伏擊者】（過關解鎖神寵：暗夜幽影鳥）',
+      enemyType: 'gremlin',
+      waves: 8,
+      path: [
+        { x: -20, y: 60 },
+        { x: 100, y: 60 },
+        { x: 100, y: 300 },
+        { x: 260, y: 300 },
+        { x: 260, y: 100 },
+        { x: 420, y: 100 },
+        { x: 420, y: 320 },
+        { x: 560, y: 320 },
+        { x: 560, y: 200 },
+        { x: 660, y: 200 }
+      ],
+      initialTower: { x: 340, y: 200 },
+      commanderPos: { x: 610, y: 200 },
+      bgImage: './assets/images/bg_level_10.png'
+    },
+    {
+      id: 11,
+      name: '第 11 關：聖域迴廊',
+      desc: '聖堂外環嚴密封鎖。敵方魔物：【血袍狂熱咒術僧】',
+      enemyType: 'monk',
+      waves: 8,
+      path: [
+        { x: -20, y: 280 },
+        { x: 180, y: 280 },
+        { x: 180, y: 120 },
+        { x: 320, y: 120 },
+        { x: 320, y: 340 },
+        { x: 480, y: 340 },
+        { x: 480, y: 70 },
+        { x: 660, y: 70 }
+      ],
+      initialTower: { x: 250, y: 200 },
+      commanderPos: { x: 610, y: 70 },
+      bgImage: './assets/images/bg_level_11.png'
+    },
+    {
+      id: 12,
+      name: '第 12 關：終焉神殿',
+      desc: '終極迴轉大迷宮！敵方魔物：【銀鎧機甲聖裁者】（通關解鎖終極神寵：耀陽聖金鳥！）',
+      enemyType: 'mech',
+      waves: 10,
+      path: [
+        { x: -20, y: 360 },
+        { x: 80, y: 360 },
+        { x: 80, y: 60 },
+        { x: 580, y: 60 },
+        { x: 580, y: 300 },
+        { x: 220, y: 300 },
+        { x: 220, y: 180 },
+        { x: 450, y: 180 },
+        { x: 450, y: 240 },
+        { x: 660, y: 240 }
+      ],
+      initialTower: { x: 330, y: 240 },
+      commanderPos: { x: 610, y: 240 },
+      bgImage: './assets/images/bg_level_12.png'
     }
   ],
 
-  // 6 款依序可挑選角色
+  // 10 款可挑選英雄角色
   CHARACTERS: [
     {
       id: 'cat',
@@ -171,10 +295,38 @@ export const CONFIG = {
       assetKey: 'char_bard',
       desc: '彈奏激昂戰歌的吟遊詩人，每波通關獲得額外 +40% 金幣獎勵',
       perk: { goldBonusMul: 1.4 }
+    },
+    {
+      id: 'spring_goddess',
+      name: '春之女神',
+      assetKey: 'char_bard',
+      desc: '執掌萬物復甦的春之女神，基地初始生命值 +5，且每波通關額外恢復 1 點生命值！',
+      perk: { bonusLives: 5, waveHeal: 1 }
+    },
+    {
+      id: 'lake_goddess',
+      name: '湖中女神',
+      assetKey: 'char_bard',
+      desc: '澄澈聖湖的守護女神，全場砲塔攻擊射程 +25%，子彈飛行速度 +20%！',
+      perk: { rangeMul: 1.25, bulletSpeedMul: 1.2 }
+    },
+    {
+      id: 'earth_goddess',
+      name: '大地女神',
+      assetKey: 'char_bard',
+      desc: '厚重廣袤的大地女神，全場砲塔攻擊力 +20%，開局初始金幣額外 +25！',
+      perk: { damageMul: 1.2, startGoldBonus: 25 }
+    },
+    {
+      id: 'kungfu_boy',
+      name: '功夫小子',
+      assetKey: 'char_bard',
+      desc: '武藝精湛的熱血少年，全場砲塔攻速 +25%，且擊殺魔物額外獲得 +1 金幣！',
+      perk: { fireRateMul: 0.75, extraKillGold: 1 }
     }
   ],
 
-  // 寵物系統（共 5 款神寵，隨關卡進度逐步解鎖）
+  // 寵物系統（共 6 款神寵，每通關 2 個關卡解鎖 1 隻）
   PETS: [
     {
       id: 'flame_bird',
@@ -187,38 +339,46 @@ export const CONFIG = {
     {
       id: 'azure_bird',
       name: '蒼穹疾風鳥',
-      unlockLevel: 3,
-      desc: '通關第 3 關獲得！疾風祝福使砲塔射速 +20%',
+      unlockLevel: 4,
+      desc: '通關第 4 關獲得！疾風祝福使砲塔射速 +20%',
       frame: { sx: 0, sy: 0, sw: 14, sh: 16 },
       buff: { fireRateMul: 0.8 }
     },
     {
       id: 'aurora_bird',
       name: '幻彩極光鳥',
-      unlockLevel: 4,
-      desc: '通關第 4 關獲得！每擊殺一隻敵人額外掉落 +1 金幣',
+      unlockLevel: 6,
+      desc: '通關第 6 關獲得！每擊殺一隻敵人額外掉落 +1 金幣',
       frame: { sx: 42, sy: 16, sw: 14, sh: 16 },
       buff: { extraKillGold: 1 }
     },
     {
       id: 'cyber_bird',
       name: '未來光能鳥',
-      unlockLevel: 5,
-      desc: '通關第 5 關獲得！全砲塔瞄準射程 +25%',
+      unlockLevel: 8,
+      desc: '通關第 8 關獲得！全砲塔瞄準射程 +25%',
       frame: { sx: 0, sy: 16, sw: 14, sh: 16 },
       buff: { rangeMul: 1.25 }
     },
     {
       id: 'shadow_bird',
       name: '暗夜幽影鳥',
-      unlockLevel: 6,
-      desc: '通關第 6 關獲得！終極神寵！賦予砲塔 25% 暴擊造成雙倍傷害',
+      unlockLevel: 10,
+      desc: '通關第 10 關獲得！賦予砲塔 25% 暴擊造成雙倍傷害',
       frame: { sx: 56, sy: 0, sw: 14, sh: 16 },
       buff: { critChance: 0.25 }
+    },
+    {
+      id: 'golden_bird',
+      name: '耀陽聖金鳥',
+      unlockLevel: 12,
+      desc: '通關第 12 關獲得！終極神寵！全場攻擊力 +15%、射程 +15%、暴擊率 +15%！',
+      frame: { sx: 14, sy: 16, sw: 14, sh: 16 },
+      buff: { damageMul: 1.15, rangeMul: 1.15, critChance: 0.15 }
     }
   ],
 
-  // 各品種魔物基本參數
+  // 各品種魔物基本參數 (一關一種專屬魔物)
   ENEMY_DEFINITIONS: {
     mon1: {
       name: '獨眼暴龍兵',
@@ -255,6 +415,42 @@ export const CONFIG = {
       assetKey: 'enemy_spiky',
       speedMul: 0.85,
       hpMul: 3.2
+    },
+    orc: {
+      name: '綠皮半獸人蠻兵',
+      assetKey: 'enemy_orc',
+      speedMul: 1.05,
+      hpMul: 3.6
+    },
+    spaceman: {
+      name: '星際裝甲巡航兵',
+      assetKey: 'enemy_spaceman',
+      speedMul: 1.15,
+      hpMul: 4.0
+    },
+    plant: {
+      name: '食人黑妖魔花',
+      assetKey: 'enemy_plant',
+      speedMul: 0.9,
+      hpMul: 4.8
+    },
+    gremlin: {
+      name: '幽冥小鬼伏擊者',
+      assetKey: 'enemy_gremlin',
+      speedMul: 1.4,
+      hpMul: 4.2
+    },
+    monk: {
+      name: '血袍狂熱咒術僧',
+      assetKey: 'enemy_monk',
+      speedMul: 1.0,
+      hpMul: 5.6
+    },
+    mech: {
+      name: '銀鎧機甲聖裁者',
+      assetKey: 'enemy_mech',
+      speedMul: 0.95,
+      hpMul: 7.0
     }
   },
 

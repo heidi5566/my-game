@@ -81,6 +81,81 @@ const ENEMY_SPRITE_CONFIGS = {
       { sx: 0, sy: 0, sw: 64, sh: 64 }
     ],
     scale: 0.7
+  },
+  orc: {
+    move: [
+      { sx: 2, sy: 27, sw: 25, sh: 25 },
+      { sx: 29, sy: 27, sw: 25, sh: 25 },
+      { sx: 56, sy: 27, sw: 25, sh: 25 },
+      { sx: 83, sy: 27, sw: 25, sh: 25 }
+    ],
+    hurt: [
+      { sx: 2, sy: 108, sw: 25, sh: 25 }
+    ],
+    scale: 1.5
+  },
+  spaceman: {
+    move: [
+      { sx: 0, sy: 64, sw: 48, sh: 64 },
+      { sx: 48, sy: 64, sw: 48, sh: 64 },
+      { sx: 96, sy: 64, sw: 48, sh: 64 }
+    ],
+    hurt: [
+      { sx: 48, sy: 128, sw: 48, sh: 64 }
+    ],
+    scale: 0.75
+  },
+  plant: {
+    move: [
+      { sx: 0, sy: 0, sw: 117, sh: 128 },
+      { sx: 351, sy: 0, sw: 117, sh: 128 },
+      { sx: 702, sy: 0, sw: 117, sh: 128 },
+      { sx: 1053, sy: 0, sw: 117, sh: 128 },
+      { sx: 1404, sy: 0, sw: 117, sh: 128 },
+      { sx: 1755, sy: 0, sw: 117, sh: 128 }
+    ],
+    hurt: [
+      { sx: 1053, sy: 0, sw: 117, sh: 128 }
+    ],
+    scale: 0.38
+  },
+  gremlin: {
+    move: [
+      { sx: 7, sy: 22, sw: 12, sh: 22 },
+      { sx: 27, sy: 22, sw: 13, sh: 22 },
+      { sx: 49, sy: 22, sw: 12, sh: 22 },
+      { sx: 68, sy: 22, sw: 13, sh: 22 },
+      { sx: 89, sy: 22, sw: 14, sh: 22 },
+      { sx: 111, sy: 22, sw: 13, sh: 22 }
+    ],
+    hurt: [
+      { sx: 108, sy: 50, sw: 14, sh: 22 }
+    ],
+    scale: 1.8
+  },
+  monk: {
+    move: [
+      { sx: 0, sy: 416, sw: 60, sh: 104 },
+      { sx: 64, sy: 416, sw: 60, sh: 104 },
+      { sx: 128, sy: 416, sw: 60, sh: 104 },
+      { sx: 192, sy: 416, sw: 60, sh: 104 }
+    ],
+    hurt: [
+      { sx: 0, sy: 312, sw: 50, sh: 104 }
+    ],
+    scale: 0.5
+  },
+  mech: {
+    move: [
+      { sx: 0, sy: 64, sw: 64, sh: 64 },
+      { sx: 64, sy: 64, sw: 64, sh: 64 },
+      { sx: 128, sy: 64, sw: 64, sh: 64 },
+      { sx: 192, sy: 64, sw: 64, sh: 64 }
+    ],
+    hurt: [
+      { sx: 128, sy: 192, sw: 64, sh: 64 }
+    ],
+    scale: 0.7
   }
 };
 
