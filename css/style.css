@@ -165,10 +165,6 @@ html, body {
   font-size: 13px;
 }
 
-#audioControls {
-  display: flex;
-  gap: 8px;
-}
 
 .mini-btn {
   padding: 4px 10px !important;
@@ -297,6 +293,28 @@ button.accent-btn.maxed {
   cursor: default;
 }
 
+button.speed-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 14px;
+  line-height: 1.25;
+  min-width: 130px;
+}
+
+.speed-main {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.speed-sub {
+  font-size: 11px;
+  opacity: 0.75;
+  font-weight: normal;
+  margin-top: 2px;
+}
+
 button.ghost {
   background: #334455;
   color: var(--text);
@@ -341,7 +359,7 @@ button:disabled {
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 300;
   padding: 16px;
 }
 
@@ -388,6 +406,12 @@ button:disabled {
 
 .close-btn:hover {
   color: #ffffff;
+}
+
+.modal-footer {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
 }
 
 /* 關卡選擇卡片 */

@@ -50,6 +50,7 @@ export class Game {
     // 遊戲狀態與波次
     this.gameState = 'MENU'; // 'MENU' | 'PLAYING'
     this.gameSpeed = 1.0;
+    this.maxUnlockedSpeed = 1.0;
     this.waveActive = false;
     this.spawnQueue = 0;
     this.spawnTimer = 0;
@@ -224,7 +225,8 @@ export class Game {
     this.bullets = [];
     this.particleSystem.clear();
     this.gameSpeed = 1.0;
-    this.hud.setSpeedState(this.gameSpeed);
+    this.maxUnlockedSpeed = 1.0;
+    this.hud.setSpeedState(this.gameSpeed, this.maxUnlockedSpeed);
     this.waveActive = false;
     this.spawnQueue = 0;
     this.spawnTimer = 0;
@@ -241,37 +243,73 @@ export class Game {
   }
 
   /**
-   * 升級遊戲行進倍速 (1.0x -> 1.5x (40金) -> 2.0x (50金))
+   * 切換或升級遊戲行進倍速
+   * 邏輯規則：
+   * 1. 速度 1.0x (未解鎖 1.5x)：點擊花 40 金升級為 1.5x；金幣不足時提示。
+   * 2. 速度 1.5x (未解鎖 2.0x)：若金幣充足 (>=50金) 點擊升級為 2.0x；若金幣不足點擊則切換回 1.0x。
+   * 3. 速度 1.0x (已解鎖 1.5x)：點擊直接切換為 1.5x，無需再次花費金幣。
+   * 4. 速度 2.0x (已達極速)：點擊在已解鎖速度間循環切換 (1.0x -> 1.5x -> 2.0x)，無需扣款。
    */
-  upgradeSpeed() {
+  toggleOrUpgradeSpeed() {
     this.audioSystem.ensureAudio();
-    if (this.gameSpeed >= 2.0) {
-      this.hud.showMessage('已達到最高倍速 (2.0x)！', 1800);
+
+    // 1. 當前為 1.0x
+    if (this.gameSpeed <= 1.0) {
+      if (this.maxUnlockedSpeed >= 1.5) {
+        // 已解鎖過 1.5x，直接切換，不花金幣
+        this.gameSpeed = 1.5;
+        this.hud.setSpeedState(this.gameSpeed, this.maxUnlockedSpeed);
+        this.hud.showMessage('⏩ 切換為 1.5 倍速', 1500);
+      } else {
+        // 尚未解鎖 1.5x，嘗試花 40 金升級
+        if (!this.player.canAfford(40)) {
+          this.hud.showMessage('金幣不足，升級 1.5 倍速需 40 金幣！', 2000);
+          return;
+        }
+        this.player.spendGold(40);
+        this.maxUnlockedSpeed = 1.5;
+        this.gameSpeed = 1.5;
+        this.audioSystem.playUpgrade();
+        this.hud.setSpeedState(this.gameSpeed, this.maxUnlockedSpeed);
+        this.updateHUD();
+        this.hud.showMessage('⏩ 遊戲速度提升至 1.5 倍速！', 1800);
+      }
       return;
     }
 
-    if (this.gameSpeed < 1.5) {
-      if (!this.player.canAfford(40)) {
-        this.hud.showMessage('金幣不足，升級 1.5 倍速需 40 金幣！', 2000);
-        return;
+    // 2. 當前為 1.5x
+    if (this.gameSpeed <= 1.5) {
+      if (this.maxUnlockedSpeed >= 2.0) {
+        // 已解鎖過 2.0x，直接切換至 2.0x
+        this.gameSpeed = 2.0;
+        this.hud.setSpeedState(this.gameSpeed, this.maxUnlockedSpeed);
+        this.hud.showMessage('⚡⚡ 切換為 2.0 倍速', 1500);
+      } else {
+        // 尚未解鎖 2.0x，檢查金幣是否足夠 (50金)
+        if (this.player.canAfford(50)) {
+          this.player.spendGold(50);
+          this.maxUnlockedSpeed = 2.0;
+          this.gameSpeed = 2.0;
+          this.audioSystem.playUpgrade();
+          this.hud.setSpeedState(this.gameSpeed, this.maxUnlockedSpeed);
+          this.updateHUD();
+          this.hud.showMessage('⚡⚡ 遊戲速度提升至 2.0 倍極速！', 1800);
+        } else {
+          // 金幣不足時再按一下，可變回 1.0x
+          this.gameSpeed = 1.0;
+          this.hud.setSpeedState(this.gameSpeed, this.maxUnlockedSpeed);
+          this.hud.showMessage('金幣不足升級 2.0x，已切換回 1.0 倍速', 1800);
+        }
       }
-      this.player.spendGold(40);
-      this.gameSpeed = 1.5;
-      this.audioSystem.playUpgrade();
-      this.hud.setSpeedState(this.gameSpeed);
-      this.updateHUD();
-      this.hud.showMessage('⏩ 遊戲速度提升至 1.5 倍速！', 1800);
-    } else if (this.gameSpeed < 2.0) {
-      if (!this.player.canAfford(50)) {
-        this.hud.showMessage('金幣不足，升級 2.0 倍速需 50 金幣！', 2000);
-        return;
-      }
-      this.player.spendGold(50);
-      this.gameSpeed = 2.0;
-      this.audioSystem.playUpgrade();
-      this.hud.setSpeedState(this.gameSpeed);
-      this.updateHUD();
-      this.hud.showMessage('⚡⚡ 遊戲速度提升至 2.0 倍極速！', 1800);
+      return;
+    }
+
+    // 3. 當前為 2.0x (已達極速)
+    if (this.gameSpeed >= 2.0) {
+      // 循環回到 1.0x
+      this.gameSpeed = 1.0;
+      this.hud.setSpeedState(this.gameSpeed, this.maxUnlockedSpeed);
+      this.hud.showMessage('切換為 1.0 倍速', 1500);
     }
   }
 
@@ -325,7 +363,7 @@ export class Game {
         const musicOn = this.audioSystem.toggleMusic();
         this.hud.setMusicState(musicOn);
       },
-      onToggleSpeed: () => this.upgradeSpeed(),
+      onToggleSpeed: () => this.toggleOrUpgradeSpeed(),
       onChangeCharInOverlay: () => {
         this.refreshMenuDisplay();
         this.hud.openModal(this.hud.charModal);

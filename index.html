@@ -39,10 +39,6 @@
           <button id="backToMenuBtn" class="ghost mini-btn">⬅ 返回主選單</button>
           <span id="currentLevelBadge" class="level-badge">第 1 關</span>
         </div>
-        <div id="audioControls">
-          <button id="soundToggleBtn" class="ghost mini-btn" title="切換音效">🔊 音效開</button>
-          <button id="musicToggleBtn" class="ghost mini-btn" title="切換音樂">🎵 音樂開</button>
-        </div>
       </div>
       
       <div id="hud">
@@ -65,7 +61,10 @@
       
       <div id="controls">
         <button id="startWaveBtn">開始波次</button>
-        <button id="speedBtn" class="accent-btn" title="升級遊戲速度">⏩ 速度 1.0x (升級 1.5x 需40金)</button>
+        <button id="speedBtn" class="accent-btn speed-btn" title="切換或升級遊戲倍速">
+          <span class="speed-main">速度 1.0x</span>
+          <span class="speed-sub">升級 1.5x 需 40 金</span>
+        </button>
         <button id="placeTowerBtn" class="secondary">放置新砲塔 (40金)</button>
         <button id="upgradeBtn">升級選中砲塔 (20金)</button>
         <button id="restartBtn">本關重新開始</button>
@@ -97,6 +96,9 @@
         <button class="close-btn" id="closeCharModal">✕</button>
       </div>
       <div id="charGrid" class="char-grid"></div>
+      <div class="modal-footer">
+        <button id="doneCharModal" class="primary-btn mini-btn">✔ 完成選擇並關閉</button>
+      </div>
     </div>
   </div>
 
@@ -109,6 +111,9 @@
       </div>
       <div class="pet-intro-tip">每通關 2 個關卡即可解鎖 1 隻神寵，獲得全隊屬性光環！</div>
       <div id="petGrid" class="pet-grid"></div>
+      <div class="modal-footer">
+        <button id="donePetModal" class="primary-btn mini-btn">✔ 完成選擇並關閉</button>
+      </div>
     </div>
   </div>
 

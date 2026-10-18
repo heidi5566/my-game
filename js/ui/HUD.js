@@ -43,12 +43,10 @@ export class HUD {
     this.restartBtn = document.getElementById('restartBtn');
     this.soundBtn = document.getElementById('soundBtn');
     this.musicBtn = document.getElementById('musicBtn');
-    this.soundToggleBtn = document.getElementById('soundToggleBtn');
-    this.musicToggleBtn = document.getElementById('musicToggleBtn');
     this.speedBtn = document.getElementById('speedBtn');
     this.placeMsg = document.getElementById('placeMsg');
 
-    // 結算彈窗
+    // 結算彈窗與更換角色/寵物狀態追蹤
     this.overlay = document.getElementById('overlay');
     this.overTitle = document.getElementById('overTitle');
     this.overText = document.getElementById('overText');
@@ -57,6 +55,7 @@ export class HUD {
     this.overChangePet = document.getElementById('overChangePet');
     this.overRestart = document.getElementById('overRestart');
     this.overMenuBtn = document.getElementById('overMenuBtn');
+    this.overlayPendingReturn = false;
 
     // 載入遮罩
     this.loadingOverlay = document.getElementById('loadingOverlay');
@@ -73,10 +72,14 @@ export class HUD {
     const closeLevel = document.getElementById('closeLevelModal');
     const closeChar = document.getElementById('closeCharModal');
     const closePet = document.getElementById('closePetModal');
+    const doneChar = document.getElementById('doneCharModal');
+    const donePet = document.getElementById('donePetModal');
 
     if (closeLevel) closeLevel.addEventListener('click', () => this.closeModals());
     if (closeChar) closeChar.addEventListener('click', () => this.closeModals());
     if (closePet) closePet.addEventListener('click', () => this.closeModals());
+    if (doneChar) doneChar.addEventListener('click', () => this.closeModals());
+    if (donePet) donePet.addEventListener('click', () => this.closeModals());
 
     // 點擊背景遮罩關閉
     [this.levelModal, this.charModal, this.petModal].forEach((modal) => {
@@ -92,6 +95,7 @@ export class HUD {
    * 切換主畫面或戰鬥畫面
    */
   showScreen(screen) {
+    this.overlayPendingReturn = false;
     this.closeModals();
     if (screen === 'menu') {
       if (this.mainMenu) this.mainMenu.classList.add('active');
@@ -106,6 +110,14 @@ export class HUD {
     if (this.levelModal) this.levelModal.classList.remove('active');
     if (this.charModal) this.charModal.classList.remove('active');
     if (this.petModal) this.petModal.classList.remove('active');
+
+    // 若是從結算介面（大勝利/戰敗）點擊更換角色/寵物，關閉彈窗後自動復原結算介面
+    if (this.overlayPendingReturn) {
+      this.overlayPendingReturn = false;
+      if (this.overlay) {
+        this.overlay.style.display = 'flex';
+      }
+    }
   }
 
   openModal(modal) {
@@ -260,52 +272,76 @@ export class HUD {
     }
     if (this.overRestart && onRestart) {
       this.overRestart.addEventListener('click', () => {
+        this.overlayPendingReturn = false;
         this.hideOverlay();
         onRestart();
       });
     }
     if (this.overNextLevel && onNextLevel) {
       this.overNextLevel.addEventListener('click', () => {
+        this.overlayPendingReturn = false;
         this.hideOverlay();
         onNextLevel();
       });
     }
     if (this.overChangeChar && onChangeCharInOverlay) {
-      this.overChangeChar.addEventListener('click', onChangeCharInOverlay);
+      this.overChangeChar.addEventListener('click', () => {
+        this.overlayPendingReturn = true;
+        this.hideOverlay();
+        onChangeCharInOverlay();
+      });
     }
     if (this.overChangePet && onChangePetInOverlay) {
-      this.overChangePet.addEventListener('click', onChangePetInOverlay);
+      this.overChangePet.addEventListener('click', () => {
+        this.overlayPendingReturn = true;
+        this.hideOverlay();
+        onChangePetInOverlay();
+      });
     }
 
-    // 音訊開關
-    if (onToggleSound) {
-      if (this.soundBtn) this.soundBtn.addEventListener('click', onToggleSound);
-      if (this.soundToggleBtn) this.soundToggleBtn.addEventListener('click', onToggleSound);
+    // 音訊開關 (僅保留下方控制按鈕)
+    if (onToggleSound && this.soundBtn) {
+      this.soundBtn.addEventListener('click', onToggleSound);
     }
-    if (onToggleMusic) {
-      if (this.musicBtn) this.musicBtn.addEventListener('click', onToggleMusic);
-      if (this.musicToggleBtn) this.musicToggleBtn.addEventListener('click', onToggleMusic);
+    if (onToggleMusic && this.musicBtn) {
+      this.musicBtn.addEventListener('click', onToggleMusic);
     }
   }
 
   /**
    * 設定遊戲倍速按鈕外觀狀態
+   * @param {number} currentSpeed - 當前行進倍速 (1.0, 1.5, 2.0)
+   * @param {number} maxUnlockedSpeed - 已解鎖的最高倍速 (1.0, 1.5, 2.0)
    */
-  setSpeedState(speed) {
+  setSpeedState(currentSpeed = 1.0, maxUnlockedSpeed = 1.0) {
     if (!this.speedBtn) return;
-    if (speed >= 2.0) {
-      this.speedBtn.textContent = '⚡ 速度 2.0x (已達極速)';
-      this.speedBtn.className = 'accent-btn maxed';
-      this.speedBtn.disabled = true;
-    } else if (speed >= 1.5) {
-      this.speedBtn.textContent = '⏩ 速度 1.5x (升級 2.0x 需50金)';
-      this.speedBtn.className = 'accent-btn';
-      this.speedBtn.disabled = false;
+    const speedStr = `${currentSpeed.toFixed(1)}x`;
+    let subStr = '';
+
+    if (maxUnlockedSpeed >= 2.0) {
+      if (currentSpeed >= 2.0) {
+        subStr = '已達極速 (點擊循環)';
+      } else if (currentSpeed >= 1.5) {
+        subStr = '切換 2.0x';
+      } else {
+        subStr = '切換 1.5x';
+      }
+    } else if (maxUnlockedSpeed >= 1.5) {
+      if (currentSpeed >= 1.5) {
+        subStr = '升級 2.0x 需 50 金';
+      } else {
+        subStr = '切換 1.5x (已解鎖)';
+      }
     } else {
-      this.speedBtn.textContent = '⏩ 速度 1.0x (升級 1.5x 需40金)';
-      this.speedBtn.className = 'accent-btn';
-      this.speedBtn.disabled = false;
+      subStr = '升級 1.5x 需 40 金';
     }
+
+    this.speedBtn.innerHTML = `
+      <span class="speed-main">速度 ${speedStr}</span>
+      <span class="speed-sub">${subStr}</span>
+    `;
+    this.speedBtn.className = 'accent-btn speed-btn';
+    this.speedBtn.disabled = false;
   }
 
   /**
@@ -360,13 +396,11 @@ export class HUD {
   setSoundState(soundOn) {
     const text = soundOn ? '🔊 音效開' : '🔇 音效關';
     if (this.soundBtn) this.soundBtn.textContent = text;
-    if (this.soundToggleBtn) this.soundToggleBtn.textContent = text;
   }
 
   setMusicState(musicOn) {
     const text = musicOn ? '🎵 音樂開' : '🎵 音樂關';
     if (this.musicBtn) this.musicBtn.textContent = text;
-    if (this.musicToggleBtn) this.musicToggleBtn.textContent = text;
   }
 
   showLoading() {
@@ -393,6 +427,7 @@ export class HUD {
    */
   showOverlay(win, wave, kills, hasNextLevel = false, petUnlockedMsg = '') {
     if (!this.overlay) return;
+    this.overlayPendingReturn = false;
     this.overlay.style.display = 'flex';
     if (this.overTitle) {
       this.overTitle.textContent = win ? '🎉 關卡大勝利！' : '💥 戰敗結束';
