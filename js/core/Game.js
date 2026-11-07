@@ -3,6 +3,8 @@ import { Physics } from '../systems/Physics.js';
 import { ParticleSystem } from '../systems/ParticleSystem.js';
 import { AudioSystem } from '../systems/AudioSystem.js';
 import { AssetManager } from '../systems/AssetManager.js';
+import { JuiceSystem } from '../systems/JuiceSystem.js';
+import { BulletSystem } from '../systems/BulletSystem.js';
 import { Player } from '../entities/Player.js';
 import { Tower } from '../entities/Tower.js';
 import { Enemy } from '../entities/Enemy.js';
@@ -29,9 +31,15 @@ export class Game {
     // 系統模組
     this.assetManager = new AssetManager();
     this.audioSystem = new AudioSystem(this.assetManager);
+    // 打擊手感模組共用同一個 AudioContext 與音效開關
+    JuiceSystem.useAudio({
+      getContext: () => this.audioSystem.audioCtx,
+      isSoundOn: () => this.audioSystem.isSoundOn()
+    });
     this.particleSystem = new ParticleSystem();
     this.hud = new HUD();
     this.inputHandler = new InputHandler(this.canvas);
+    BulletSystem.setBounds(this.width, this.height);
 
     // 持久化進度讀取 (localStorage)
     this.unlockedLevelMax = parseInt(localStorage.getItem('mini_td_unlocked_level') || '1', 10);
@@ -223,7 +231,9 @@ export class Game {
 
     this.enemies = [];
     this.bullets = [];
+    BulletSystem.clear();
     this.particleSystem.clear();
+    JuiceSystem.reset();
     this.gameSpeed = 1.0;
     this.maxUnlockedSpeed = 1.0;
     this.hud.setSpeedState(this.gameSpeed, this.maxUnlockedSpeed);
@@ -325,6 +335,18 @@ export class Game {
     window.addEventListener('pointerdown', unlockOnFirstGesture, { once: true });
     window.addEventListener('keydown', unlockOnFirstGesture, { once: true });
 
+    // 空白鍵：指揮官發射扇形散射子彈（只在戰鬥中、且焦點不在輸入框時生效）
+    window.addEventListener('keydown', (e) => {
+      if (e.code !== 'Space') return;
+      if (this.gameState !== 'PLAYING' || this.gameOver) return;
+      const tag = e.target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return;
+      e.preventDefault();
+      if (e.repeat) return; // 長按不連發，連擊靠玩家連按
+      BulletSystem.fire(this.player.x, this.player.y);
+      JuiceSystem.playLaser();
+    });
+
     this.hud.bindEvents({
       onOpenLevelModal: () => {
         this.audioSystem.ensureAudio();
@@ -343,6 +365,8 @@ export class Game {
       },
       onBackToMenu: () => {
         this.gameState = 'MENU';
+        JuiceSystem.reset();
+        BulletSystem.clear();
         this.refreshMenuDisplay();
         this.hud.showScreen('menu');
       },
@@ -607,6 +631,7 @@ export class Game {
       if (!e.dead) {
         e.update(simDt, this.currentLevel.path, (deadEnemy) => {
           const isDead = this.player.takeDamage(1);
+          JuiceSystem.shake(10); // 敵人突破防線：明顯震動
           if (isDead) {
             this.endGame(false);
           }
@@ -632,33 +657,47 @@ export class Game {
     for (const b of this.bullets) {
       if (!b.dead) {
         b.update(simDt, (bullet, target, damage) => {
-          const currentHp = target.takeDamage(damage);
-          if (currentHp > 0) {
-            this.particleSystem.spawnHit(target.x, target.y);
-            this.audioSystem.playHit();
-          } else if (!target.dead) {
-            target.dead = true;
-            let reward = target.reward;
-            if (this.pet?.config?.buff?.extraKillGold) {
-              reward += this.pet.config.buff.extraKillGold;
-            }
-            const charCfg = CONFIG.CHARACTERS.find(c => c.id === this.selectedCharId);
-            if (charCfg?.perk?.extraKillGold) {
-              reward += charCfg.perk.extraKillGold;
-            }
-            this.player.addGold(reward);
-            this.player.addKill();
-            this.particleSystem.spawnExplosion(target.x, target.y);
-            this.audioSystem.playExplosion();
-          }
+          this.applyDamage(target, damage);
         });
       }
     }
     this.bullets = this.bullets.filter(b => !b.dead);
 
+    // 指揮官扇形散射子彈（與砲塔子彈共用同一套傷害/擊殺獎勵邏輯）
+    BulletSystem.update(simDt, this.enemies, (target, damage) => {
+      this.applyDamage(target, damage);
+    });
+
     this.particleSystem.update(simDt);
     this.checkWaveEnd();
     this.updateHUD();
+  }
+
+  /**
+   * 對敵人造成傷害，並統一處理受擊特效與擊殺獎勵（砲塔子彈與指揮官子彈共用）
+   */
+  applyDamage(target, damage) {
+    if (target.dead) return;
+    const currentHp = target.takeDamage(damage);
+    if (currentHp > 0) {
+      this.particleSystem.spawnHit(target.x, target.y);
+      this.audioSystem.playHit();
+      return;
+    }
+    target.dead = true;
+    let reward = target.reward;
+    if (this.pet?.config?.buff?.extraKillGold) {
+      reward += this.pet.config.buff.extraKillGold;
+    }
+    const charCfg = CONFIG.CHARACTERS.find(c => c.id === this.selectedCharId);
+    if (charCfg?.perk?.extraKillGold) {
+      reward += charCfg.perk.extraKillGold;
+    }
+    this.player.addGold(reward);
+    this.player.addKill();
+    this.particleSystem.spawnExplosion(target.x, target.y);
+    this.audioSystem.playExplosion();
+    JuiceSystem.shake(3); // 擊殺：輕微震動
   }
 
   drawPlacementPreview(mx, my) {
@@ -691,6 +730,11 @@ export class Game {
     if (this.gameState !== 'PLAYING') return;
 
     this.ctx.clearRect(0, 0, this.width, this.height);
+
+    // 鏡頭震動：推進一幀並把整個場景平移，最後統一 restore
+    JuiceSystem.step();
+    this.ctx.save();
+    this.ctx.translate(JuiceSystem.offsetX, JuiceSystem.offsetY);
 
     // 1. 繪製當前關卡背景圖
     const bgKey = `bg_level_${this.currentLevelId}`;
@@ -737,5 +781,9 @@ export class Game {
     // 8. 繪製建造模式的預覽游標
     const mousePos = this.inputHandler.getMousePos();
     this.drawPlacementPreview(mousePos.x, mousePos.y);
+
+    this.ctx.restore(); // 結束鏡頭震動平移
+    // 9. 繪製指揮官扇形散射子彈與曳尾動效 (BulletSystem，只繪製不更新)
+    BulletSystem.render(this.ctx);
   }
 }
