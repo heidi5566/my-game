@@ -131,5 +131,32 @@
   </div>
 
   <script type="module" src="js/main.js"></script>
+  <script type="module" src="src/bullets.js"></script>
+  <script type="module">
+    import { BulletSystem } from './src/bullets.js';
+
+    // 綁定空白鍵發射扇形散射子彈
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
+        e.preventDefault();
+        const playerX = window.game?.player?.x ?? 610;
+        const playerY = window.game?.player?.y ?? 80;
+        BulletSystem.fire(playerX, playerY);
+      }
+    });
+
+    // 特效更新循環 (非戰鬥狀態或備用渲染)
+    const canvas = document.getElementById('game');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      const renderIdleBullets = () => {
+        if (!window.game || window.game.gameState !== 'PLAYING') {
+          BulletSystem.update(ctx);
+        }
+        requestAnimationFrame(renderIdleBullets);
+      };
+      requestAnimationFrame(renderIdleBullets);
+    }
+  </script>
 </body>
 </html>

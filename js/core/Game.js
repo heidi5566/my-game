@@ -737,5 +737,10 @@ export class Game {
     // 8. 繪製建造模式的預覽游標
     const mousePos = this.inputHandler.getMousePos();
     this.drawPlacementPreview(mousePos.x, mousePos.y);
+
+    // 9. 繪製獨立扇形散射子彈與曳尾動效 (BulletSystem)
+    if (typeof window !== 'undefined' && window.BulletSystem?.update) {
+      window.BulletSystem.update(this.ctx);
+    }
   }
 }

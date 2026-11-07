@@ -6,6 +6,7 @@ import { Game } from './core/Game.js';
 window.addEventListener('DOMContentLoaded', () => {
   try {
     const game = new Game('game');
+    window.game = game;
     game.start();
     console.log('[GameEngine] 塔防遊戲引擎初始化成功，遊戲循環已啟動。');
   } catch (error) {
